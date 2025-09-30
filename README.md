@@ -30,10 +30,8 @@ values in this file, like kubeconfigs.
 2. Remove the `sops` line towards the bottom of the file and anything underneath
    it.
 3. Make the following changes:
-    - Set the `kubeconfig` property under `environments.aws.cluster` to the
-      kubeconfig for the OCP cluster in AWS.
-    - Set the `kubeconfig` property under `environments.gcp.cluster` to the
-      kubeconfig for the OCP cluster in GCP.
+    - Set `kubeconfigs.aws` to the kubeconfig for the OCP cluster in AWS.
+    - Set `kubeconfigs.gcp` to the kubeconfig for the OCP cluster in GCP.
 
 ##### Maintainers and contributors
 
@@ -42,10 +40,11 @@ values in this file, like kubeconfigs.
 2. [Log into BitWarden](https://vault.bitwarden.com) and search for the
    "OpenShift Multicloud Demo GPG Key" secret in the "Red Hat, Inc." vault. Copy
    the data in the "GPG Private Key" field.
-3. In a terminal, type in `echo -e` then, in single quotes, paste in the data
-   you copied from Bitwarden and add `| gpg --import` to the end. You'll be
-   asked to enter a passphrase. Copy the password in the Bitwarden secret and
-   paste it in here.
+3. In a terminal, type `echo `, paste in the data you copied, then add ` |
+   base64 -d | gpg --import` afterwards.
+
+   You'll be asked to enter a passphrase. Copy the password in the Bitwarden
+   secret and paste it in here.
 
    Once done, you should see something that looks like the below:
 
