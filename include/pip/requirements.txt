@@ -1,0 +1,7 @@
+ansible
+openshift
+pyyaml
+kubernetes
+passlib
+datetime
+bcrypt==4.0.1

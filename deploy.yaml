@@ -1,0 +1,10 @@
+---
+- name: Deploy demo environments
+  hosts: localhost
+  gather_facts: false
+  connection: local
+  tasks:
+    - include_tasks: tasks/setup_environment.yaml
+      loop: "{{ environments }}"
+      loop_control:
+        loop_var: env

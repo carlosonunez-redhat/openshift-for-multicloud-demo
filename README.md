@@ -9,6 +9,10 @@ or need help!
 
 ### 🛫 Deploy the Environment
 
+- [Clone this repository](#clone-this-repository)
+- [Create a config file](#create-a-config-file)
+- [Deploy!](#deploy)
+
 #### Clone this repository!
 
 ```sh
@@ -61,6 +65,14 @@ values in this file, like kubeconfigs.
    ```
    sops --decrypt config.yaml
    ```
+
+#### Deploy!
+
+```sh
+deploy.sh
+```
+
+(Add `--help` to see what else you can do with this script.)
 
 ### 📝 Perform the demo
 

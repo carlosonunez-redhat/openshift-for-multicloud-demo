@@ -1,0 +1,38 @@
+volumes:
+  ansible-data-vol:
+    external: true
+services:
+  deploy:
+    depends_on:
+      confirm_config_usable:
+        condition: service_completed_successfully
+    build:
+      context: .
+      dockerfile: include/containerfiles/Containerfile
+    volumes:
+      - ansible-data-vol:/data
+      - $PWD/deploy.yaml:/work/deploy.yaml
+      - $PWD/tasks:/work/tasks
+    working_dir: /work
+    entrypoint: bash
+    # TODO: Remove this workaround once this PR gets merged:
+    # https://github.com/ansible/ansible/pull/85758
+    environment:
+      ANSIBLE_FORCE_COLOR: "true"
+    command:
+      - -c
+      - |-
+        ansible-playbook --extra-vars '@/data/config.yaml' deploy.yaml |
+          grep --color=always -Ev --line-buffered 'included: /work/tasks'
+  confirm_config_usable:
+    build:
+      context: .
+      dockerfile: include/containerfiles/Containerfile
+    volumes:
+      - ansible-data-vol:/data
+    working_dir: /data
+    entrypoint: bash
+    command:
+      - -c
+      - test -f /data/config.yaml && \
+        grep -vq AES256_GCM
