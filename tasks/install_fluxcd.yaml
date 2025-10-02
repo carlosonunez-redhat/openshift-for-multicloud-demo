@@ -1,0 +1,62 @@
+---
+- name: "[{{ env.name }}] Create flux-system namespace"
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: flux-system
+
+- name: "[{{ env.name }}] Create Flux operator group"
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+    definition:
+      apiVersion: operators.coreos.com/v1
+      kind: OperatorGroup
+      metadata:
+        name: flux-operator-og
+        namespace: flux-system
+      spec:
+        targetNamespaces:
+          - flux-system
+
+- name: "[{{ env.name }}] Install Flux operator"
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: flux-operator
+        namespace: flux-system
+      spec:
+        channel: stable
+        name: flux-operator
+        source: community-operators
+        sourceNamespace: openshift-marketplace
+        config:
+          env:
+            - name: DEFAULT_SERVICE_ACCOUNT
+              value: flux-operator
+    wait: yes
+    wait_condition:
+      type: CatalogSourcesUnhealthy
+      status: "False"
+      reason: "AllCatalogSourcesHealthy"
+
+- name: "[{{ env.name }}] Wait for Flux operator to be installed"
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+    kind: Deployment
+    namespace: flux-system
+    name: flux-operator
+    wait: yes
+    wait_condition:
+      type: Available
+      status: "True"
+      reason: MinimumReplicasAvailable
+

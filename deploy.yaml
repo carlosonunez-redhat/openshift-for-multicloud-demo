@@ -8,3 +8,8 @@
       loop: "{{ environments }}"
       loop_control:
         loop_var: env
+
+    - include_tasks: tasks/install_fluxcd.yaml
+      loop: "{{ environments }}"
+      loop_control:
+        loop_var: env
