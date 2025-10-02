@@ -1,0 +1,15 @@
+---
+- name: "[{{ env.name }}] List nodes to confirm connectivity to cluster"
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: Node
+    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+  register: result
+
+- name: "[{{ env.name }}] Confirm that Community Operators catalog source installed"
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+    kind: CatalogSource
+    name: community-operators
+    namespace: openshift-marketplace

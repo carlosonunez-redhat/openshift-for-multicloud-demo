@@ -1,7 +1,0 @@
----
-- name: "List nodes to confirm connectivity to cluster in '{{ env.name }}'"
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Node
-    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
-  register: result
