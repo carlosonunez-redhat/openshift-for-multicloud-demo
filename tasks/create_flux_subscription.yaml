@@ -1,0 +1,56 @@
+---
+- set_fact:
+    git_repo_basename: "{{ (common.gitops.repo.location.url | split('/') | last) }}"
+
+- set_fact:
+    git_repo_secret_ref: "git-repo-{{ git_repo_basename }}"
+
+- name: "[{{ env.name }}] Add Git Repository SSH key"
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: "{{ git_repo_secret_ref }}"
+        namespace: flux-system
+      type: Opaque
+      stringData:
+        identity: "{{ common.gitops.repo.secrets.ssh_key }}"
+        known_hosts: "{{ common.gitops.repo.settings.known_hosts }}"
+- name: "[{{ env.name }}] Configure Flux and connect cluster to this repository"
+  register: flux_instance
+  kubernetes.core.k8s:
+    state: present
+    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+    definition:
+      apiVersion: fluxcd.controlplane.io/v1
+      kind: FluxInstance
+      metadata:
+        name: flux
+        namespace: flux-system
+        annotations:
+          fluxcd.controlplane.io/reconcileEvery: 1h
+      spec:
+        distribution:
+          version: 2.x
+          registry: ghcr.io/fluxcd
+        components:
+          - source-controller
+          - kustomize-controller
+          - helm-controller
+          - notification-controller
+          - image-reflector-controller
+          - image-automation-controller
+        cluster:
+          type: openshift
+          multitenant: true
+          networkPolicy: true
+        sync:
+          kind: GitRepository
+          name: "{{ git_repo_basename }}"
+          url: "{{ common.gitops.repo.location.url }}"
+          ref: "refs/heads/{{ common.gitops.repo.location.ref }}"
+          path: "{{ common.gitops.repo.location.path }}"
+          pullSecret: "{{ git_repo_secret_ref }}"

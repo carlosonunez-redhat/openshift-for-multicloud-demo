@@ -13,3 +13,8 @@
       loop: "{{ environments }}"
       loop_control:
         loop_var: env
+
+    - include_tasks: tasks/create_flux_subscription.yaml
+      loop: "{{ environments }}"
+      loop_control:
+        loop_var: env
