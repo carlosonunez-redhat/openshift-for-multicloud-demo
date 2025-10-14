@@ -3,6 +3,7 @@ DATA_VOLUME_NAME=ansible-data-vol
 CONTAINER_BIN="${CONTAINER_BIN:-podman}"
 COMPOSE_FILE="${COMPOSE_FILE:-compose.yaml}"
 COMPOSE_BIN="${COMPOSE_BIN:-podman-compose}"
+CONFIG_YAML_PATH="$(dirname "$0")/config.yaml"
 
 usage() {
   cat <<-EOF
@@ -56,6 +57,83 @@ preflight() {
   _confirm_prereqs_or_fail
 }
 
+prepare_cluster_secrets() {
+  _cluster_pgp_key_fp() {
+    gpg --show-keys --with-colons <(sops decrypt --extract \
+      '["common"]["gitops"]["repo"]["secrets"]["cluster_gpg_key"]' \
+      config.yaml) | grep -m 1 fpr | rev | cut -f2 -d ':' | rev
+  }
+
+  _cluster_pull_secret() {
+    sops decrypt -extract '["common"]["ocp_pull_secret"]' "$CONFIG_YAML_PATH"
+  }
+
+  _write_file_if_pgp_fp_differs_from_config_yaml_fp() {
+    _file_pgp_fp_matches_cluster_pgp_key_fp() {
+      local fp yq_query
+      fp="$1"
+      yq_query="$2"
+      test -f "$fp" && test "$(yq -r "$yq_query" "$fp")" == "$(_cluster_pgp_key_fp)"
+    }
+
+    local file yq_query encrypt thing
+    file="$1"
+    yq_query="$2"
+    text="$3"
+    encrypt="${4:-false}"
+
+    _file_pgp_fp_matches_cluster_pgp_key_fp "$file" "$yq_query" && return 0
+    test "${encrypt,,}" == 'false' && thing='file' || thing=secret
+    >&2 echo "INFO: Writing cluster $thing: '$file' (encrypt: $encrypt)"
+    test "${encrypt,,}" == false && echo "$text" > "$file" && return 0
+    echo "$text" | sops encrypt --filename-override "$file" --output "$file"
+  }
+
+  _encrypt_file_if_pgp_fp_differs_from_config_yaml_fp() {
+    _write_file_if_pgp_fp_differs_from_config_yaml_fp "$1" "$2" "$3" 'true'
+  }
+
+  _write_pull_secrets_for_cluster_components_if_pgp_fp_changed() {
+    for component in "$@"
+    do
+      metadata="name: ocp-pull-secret"
+      test -f "$(dirname "$0")/cluster/base/${component}/namespace.yaml" &&
+        metadata="$metadata,namespace: $(yq -r .metadata.name \
+          "$(dirname "$0")/cluster/base/${component}/namespace.yaml")"
+      _encrypt_file_if_pgp_fp_differs_from_config_yaml_fp \
+        "$(dirname "$0")/cluster/base/${component}/pull_secret.yaml" \
+        '.sops.pgp[0].fp' \
+        "$(cat <<-EOF
+apiVersion: v1
+kind: Secret
+metadata:
+$(tr ',' '\n' <<< "$metadata" | sed -E 's/^/  /')
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: $(_cluster_pull_secret | base64 -w 0)
+EOF
+)"
+    done
+  }
+
+  _write_cluster_sops_config_if_pgp_fp_changed() {
+    _write_file_if_pgp_fp_differs_from_config_yaml_fp \
+      "$(dirname "$0")/cluster/.sops.yaml" \
+      '.creation_rules[0].pgp' \
+      "$(cat <<-EOF
+---
+creation_rules:
+- path_regex: '.*.yaml'
+  encrypted_regex: '^(data|stringData)$'
+  pgp: $(_cluster_pgp_key_fp)
+EOF
+)"
+  }
+
+  _write_cluster_sops_config_if_pgp_fp_changed
+  _write_pull_secrets_for_cluster_components_if_pgp_fp_changed 'acm'
+}
+
 show_help_if_requested() {
   grep -Eq '[-]{1,2}help' <<< "$@" || return 0
   usage
@@ -64,6 +142,7 @@ show_help_if_requested() {
 
 set -e
 show_help_if_requested "$@"
+prepare_cluster_secrets
 preflight
 create_data_volume
 upload_config_into_data_volume
