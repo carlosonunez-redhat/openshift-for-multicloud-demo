@@ -69,16 +69,14 @@
           ref: "refs/heads/{{ common.gitops.repo.location.ref }}"
           path: "{{ common.gitops.repo.location.path }}"
           pullSecret: "{{ git_repo_secret_ref }}"
-
-- name: "[{{ env.name }}] Configure decryption provider for the repository"
-  kubernetes.core.k8s_json_patch:
-    kind: Kustomization
-    namespace: flux-system
-    name: "{{ git_repo_basename }}"
-    patch:
-      - op: replace
-        path: /spec/decryption/provider
-        value: sops
-      - op: replace
-        path: /spec/decryption/secretRef/name
-        value: "{{ git_repo_sops_ref }}"
+        kustomize:
+          patches:
+            - target:
+                kind: Kustomization
+              patch: |-
+                - op: add
+                  path: /spec/decryption
+                  value:
+                    provider: sops
+                    secretRef:
+                      name: "{{ git_repo_sops_ref }}"
