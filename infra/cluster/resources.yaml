@@ -6,7 +6,8 @@ metadata:
 spec:
   interval: 1m0s
   sourceRef:
-    name: repo
+    kind: GitRepository
+    name: cluster-config
     namespace: flux-system
   path: ./infra/resources
   wait: true
