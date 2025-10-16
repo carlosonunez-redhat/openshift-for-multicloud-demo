@@ -131,7 +131,6 @@ EOF
   }
 
   _update_secrets_kustomization_yaml() {
-    set -x
     kustomization_fp="$(dirname "$0")/infra/secrets/kustomization.yaml"
     current=$(find "$(dirname "$kustomization_fp")" -type f -name '*.yaml' -exec basename {} \; |
     grep -Ev '(\.sops|kustomization).yaml' |

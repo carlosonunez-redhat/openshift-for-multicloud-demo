@@ -1,5 +1,8 @@
 ---
 - set_fact:
+    git_repo_basename: "{{ (common.gitops.repo.location.url | split('/') | last) }}"
+
+- set_fact:
     git_repo_secret_ref: "git-repo-{{ git_repo_basename }}"
 
 - name: "[{{ env.name }}] Add Git Repository SSH key"
@@ -10,7 +13,7 @@
       apiVersion: v1
       kind: Secret
       metadata:
-        name: "r{ git_repo_secret_ref }}"
+        name: "{{ git_repo_secret_ref }}"
         namespace: flux-system
       type: Opaque
       stringData:
