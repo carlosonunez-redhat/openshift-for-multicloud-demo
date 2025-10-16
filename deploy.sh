@@ -68,7 +68,7 @@ prepare_cluster_secrets() {
     sops decrypt -extract '["common"]["ocp_pull_secret"]' "$CONFIG_YAML_PATH"
   }
 
-  _write_file_if_pgp_fp_differs_from_config_yaml_fp() {
+  _write_file_if_pgp_fp_differs_from_cluster_pgp_fp() {
     _file_pgp_fp_matches_cluster_pgp_key_fp() {
       local fp yq_query
       fp="$1"
@@ -89,8 +89,8 @@ prepare_cluster_secrets() {
     echo "$text" | sops encrypt --filename-override "$file" --output "$file"
   }
 
-  _encrypt_file_if_pgp_fp_differs_from_config_yaml_fp() {
-    _write_file_if_pgp_fp_differs_from_config_yaml_fp "$1" "$2" "$3" 'true'
+  _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp() {
+    _write_file_if_pgp_fp_differs_from_cluster_pgp_fp "$1" "$2" "$3" 'true'
   }
 
   _write_pull_secrets_for_cluster_components_if_pgp_fp_changed() {
@@ -100,7 +100,7 @@ prepare_cluster_secrets() {
       test -f "$(dirname "$0")/cluster/base/${component}/namespace.yaml" &&
         metadata="$metadata,namespace: $(yq -r .metadata.name \
           "$(dirname "$0")/cluster/base/${component}/namespace.yaml")"
-      _encrypt_file_if_pgp_fp_differs_from_config_yaml_fp \
+      _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
         "$(dirname "$0")/cluster/base/${component}/pull_secret.yaml" \
         '.sops.pgp[0].fp' \
         "$(cat <<-EOF
@@ -117,7 +117,7 @@ EOF
   }
 
   _write_cluster_sops_config_if_pgp_fp_changed() {
-    _write_file_if_pgp_fp_differs_from_config_yaml_fp \
+    _write_file_if_pgp_fp_differs_from_cluster_pgp_fp \
       "$(dirname "$0")/cluster/.sops.yaml" \
       '.creation_rules[0].pgp' \
       "$(cat <<-EOF
