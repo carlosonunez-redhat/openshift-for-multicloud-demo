@@ -97,11 +97,11 @@ prepare_cluster_secrets() {
     for component in "$@"
     do
       metadata="name: ocp-pull-secret"
-      test -f "$(dirname "$0")/cluster/base/${component}/namespace.yaml" &&
+      test -f "$(dirname "$0")/infra/${component}/namespace.yaml" &&
         metadata="$metadata,namespace: $(yq -r .metadata.name \
-          "$(dirname "$0")/cluster/base/${component}/namespace.yaml")"
+          "$(dirname "$0")/infra/${component}/namespace.yaml")"
       _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
-        "$(dirname "$0")/cluster/base/${component}/pull_secret.yaml" \
+        "$(dirname "$0")/infra/secrets/$(basename "$component").yaml" \
         '.sops.pgp[0].fp' \
         "$(cat <<-EOF
 apiVersion: v1
@@ -118,7 +118,7 @@ EOF
 
   _write_cluster_sops_config_if_pgp_fp_changed() {
     _write_file_if_pgp_fp_differs_from_cluster_pgp_fp \
-      "$(dirname "$0")/cluster/.sops.yaml" \
+      "$(dirname "$0")/infra/secrets/.sops.yaml" \
       '.creation_rules[0].pgp' \
       "$(cat <<-EOF
 ---
@@ -130,8 +130,26 @@ EOF
 )"
   }
 
+  _update_secrets_kustomization_yaml() {
+    set -x
+    kustomization_fp="$(dirname "$0")/infra/secrets/kustomization.yaml"
+    current=$(find "$(dirname "$kustomization_fp")" -type f -name '*.yaml' -exec basename {} \; |
+    grep -Ev '(\.sops|kustomization).yaml' |
+      sort)
+    last=$(yq -r '.resources[]' "$kustomization_fp" | sort)
+    test "$current" == "$last" && return 0
+    current_json=$(printf "[%s]" \
+      "$(echo "$current" |
+          sed -E 's/(.*)/"\1"/g' |
+          tr '\n' ',' |
+          sed -E 's/,$//')")
+    yq -ir ".resources = $current_json" "$kustomization_fp"
+  }
+
   _write_cluster_sops_config_if_pgp_fp_changed
-  _write_pull_secrets_for_cluster_components_if_pgp_fp_changed 'acm'
+  _write_pull_secrets_for_cluster_components_if_pgp_fp_changed \
+    'operators/acm'
+  _update_secrets_kustomization_yaml
 }
 
 show_help_if_requested() {

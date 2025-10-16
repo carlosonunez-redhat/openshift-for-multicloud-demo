@@ -15,7 +15,7 @@ common:
                 url: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
                 # this can also be a commit SHA.
                 ref: main
-                path: cluster
+                path: ./infra/cluster
             secrets:
                 # encrypted
                 cluster_gpg_key: ENC[AES256_GCM,data:Wzqop8SXLJ2V/QI42UL7+FzgxVDgev+k9Hp/W9rprzZLHQci+yxybX7BFH8A7QkhqjHFR/lyOAwGoOctf5sBUsqC64qY5Crfj2mlEeqZ2fPARbs9lQIpLmnogeOgiSwhPBzueIGL1eeB2OWCb0zKmF2i/NghguUzFTLQcXopgALtHGkyZ07yHTnOs/0vXLMejvCeCnWwcknpbK/BAUb9YGtVR2kdeyd0F47TjbjIWEfuYK6AlrutqsXohxwq4/8QWKDI7vvqVJk9zq+DaY6cRz+bIPMgj1h+OmgHrwVegpTLqs+iiUBJAYRo3BLsKc9664EuHMNQepohaTk6W1D/Rijy0XOtpH/qObv+rHjf1OsB7mqioJqhqtcQnUhOqJnoBVVrH632syM4hNDXuN8TeFZIvNIPf3V9tf3IBQ/Mwo6hNW0lRFKW0U522XpJDGOD9Utgm4afXMJaDB0pApF3Fie6UoZKvgxbNhcedSdlwAS09Om71xYWzmCqDVmHc5+Fqgubl8/z5AvvyaJhtzalxqL3A7LVe0NHoHBEsqV8m1p2Pl0aFRHOvlLWUZEpuEggqSnzsSZFJhYSykaVTE2tLsKzxwwMDPUiHU7L1ubPSMoYrFF6cq4DONO/BN9h5+tLvfZywVhFoDqy5AY1k9RkRh/tSvicIBgwiMQDGA3BkLC5YI7Co5nIkrrBuX1sROYVItzR1f+f1o/Mc1y3CJgTmNsqc4qrVVy6f9wP+ZNpVZm8GTDfH4ZkkPTSEfnaSxOtcCpkbj58piXaiEK1/Gnb7aUyJluGiul95IL/DTsFsNv+XbSSZnd0zBlslrzl5Oxd/KUwFmNtreMTYeS6iCmw8IFC4n/iW+iekj1zIsh42OXOF9TtWuyBcELAuL+Ib/8+RRH/V6KvABKRrOc82kRjbLPsBrvg6GrwwDED9vZj4AKwPnzaYHCz1DDGxwTX5M8gGwZQFY2JK9lP1DBx4AhtcZ6NMw==,iv:rWSouSXn9FxJwpKtXOa/mR19/MAnFS2yDpVSGE1v+Ow=,tag:8wJFzYmSFIk21tvCYz9RJQ==,type:str]
@@ -51,8 +51,8 @@ environments:
                 client-certificate-data:**REMOVED**
                 client-key-data:**REMOVED**
 sops:
-    lastmodified: "2025-10-14T21:25:56Z"
-    mac: ENC[AES256_GCM,data:o5H2LiMylneH/I4Ih2VNT0WXshX/FUDkS73qmjQr+8U1D4bT8ViVjVhXg+KXrBuUBYXlXPIEC5ZCrbfhLJoYDBXRSqg6L1YXv7v5JBRCB51X5wiZ1xrXYrt4FihHuQExEpVdHa4FeopXnziNbeEjBT/a6Us756JUhhSOZstyEg8=,iv:UigPSQu0KsdtQpHd7KNLpLsY0Cd4MYvMqJHgli0NKn0=,tag:v3+BsyD/Au8Jjzu8pBPiyQ==,type:str]
+    lastmodified: "2025-10-16T20:02:43Z"
+    mac: ENC[AES256_GCM,data:OjU1vPcmcvAoaKQ1YUCtiDlT8tyfMmBMGp+dej/XnmmNkIHTwlHTm9xGEW0LzGfydR1w1ZSK26eFXsyTBE9UzwoiEWIMqcAtlRgM6/yJUOX7PofXmXCp8/FF9mrwDJ9fSHuYkI7lEqUtVLMzg13PVOX8eFefSeaZ+XcPu46xym4=,iv:u4BtCgE0JgAdWBTj8bMoFsZ6u9jLutD1m5ri7P7BIAU=,tag:ZnT9EvO0W0Po1f4P7MPGaA==,type:str]
     pgp:
         - created_at: "2025-09-30T22:07:13Z"
           enc: |-

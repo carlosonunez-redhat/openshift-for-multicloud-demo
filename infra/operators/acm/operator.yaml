@@ -17,9 +17,3 @@ spec:
   channel: release-2.14
   installPlanApproval: Automatic
   name: advanced-cluster-management
----
-apiVersion: operator.open-cluster-management.io/v1
-kind: MultiClusterHub
-metadata:
-  name: multiclusterhub
-  namespace: openshift-cluster-management

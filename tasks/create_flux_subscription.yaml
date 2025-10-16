@@ -1,10 +1,6 @@
 ---
 - set_fact:
-    git_repo_basename: "{{ (common.gitops.repo.location.url | split('/') | last) }}"
-
-- set_fact:
     git_repo_secret_ref: "git-repo-{{ git_repo_basename }}"
-    git_repo_sops_ref: "git-repo-sops-{{ git_repo_basename }}"
 
 - name: "[{{ env.name }}] Add Git Repository SSH key"
   kubernetes.core.k8s:
@@ -14,7 +10,7 @@
       apiVersion: v1
       kind: Secret
       metadata:
-        name: "{{ git_repo_secret_ref }}"
+        name: "r{ git_repo_secret_ref }}"
         namespace: flux-system
       type: Opaque
       stringData:
@@ -29,7 +25,7 @@
       apiVersion: v1
       kind: Secret
       metadata:
-        name: "{{ git_repo_sops_ref }}"
+        name: cluster-key
         namespace: flux-system
       type: Opaque
       data:
@@ -64,19 +60,8 @@
           networkPolicy: true
         sync:
           kind: GitRepository
-          name: "{{ git_repo_basename }}"
+          name: cluster-config
           url: "{{ common.gitops.repo.location.url }}"
           ref: "refs/heads/{{ common.gitops.repo.location.ref }}"
           path: "{{ common.gitops.repo.location.path }}"
           pullSecret: "{{ git_repo_secret_ref }}"
-        kustomize:
-          patches:
-            - target:
-                kind: Kustomization
-              patch: |-
-                - op: add
-                  path: /spec/decryption
-                  value:
-                    provider: sops
-                    secretRef:
-                      name: "{{ git_repo_sops_ref }}"

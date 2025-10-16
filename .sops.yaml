@@ -3,6 +3,6 @@ creation_rules:
   - path_regex: 'config.yaml$'
     pgp: E31F3444A6E97FF1CE32085C7C1D2B09863AA317
     encrypted_comment_regex: '^[ ]{0,}encrypted$'
-  - path_regex: 'cluster/.*.yaml$'
+  - path_regex: 'infra/secrets/.*.yaml$'
     pgp: 690EB362BCE71D5794727EF0382DB86937BB1D2F
     encrypted_regex: '^(data|stringData)$'
