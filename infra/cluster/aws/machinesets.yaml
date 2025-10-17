@@ -1,0 +1,77 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: machine-sets
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: cluster-config
+    namespace: flux-system
+  path: ./infra/machinesets/aws/worker
+  wait: true
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: cluster-key
+  patches:
+    - target:
+        kind: MachineSet
+        name: patch-me
+        namespace: openshift-machine-api
+      patch: |-
+        metadata:
+          name: cluster-dxjvm-gcv2n-infra-us-east-2b
+          annotations:
+            machine.openshift.io/cluster-api-cluster: foo 
+        spec:
+          selector:
+            matchLabels:
+              machine.openshift.io/cluster-api-cluster: foo
+          template:
+            metadata:
+              labels:
+                machine.openshift.io/cluster-api-cluster: foo
+            spec:
+              providerSpec:
+                instanceType: m6a.4xlarge
+                credentialsSecret:
+                  name: aws-cloud-credentials
+                iamInstanceProfile:
+                  id: cluster-dxjvm-gcv2n-worker-profile
+                placement:
+                  availabilityZone: us-east-2b
+                  region: us-east-2
+                subnet:
+                  filters:
+                  - name: tag:Name
+                    values:
+                    - cluster-dxjvm-gcv2n-subnet-private-us-east-2c
+                securityGroups:
+                  - filters:
+                    - name: tag:Name
+                      values:
+                      - cluster-dxjvm-gcv2n-node
+                  - filters:
+                    - name: tag:Name
+                      values:
+                      - cluster-dxjvm-gcv2n-lb
+                userDataSecret:
+                  name: worker-user-data
+                tags:
+                  - name: kubernetes.io/cluster/cluster-dxjvm-gcv2n
+                    value: owned
+                  - name: Stack
+                    value: project ocp4-cluster-dxjvm
+                  - name: env_type
+                    value: ocp4-cluster
+                  - name: guid
+                    value: dxjvm
+                  - name: owner
+                    value: unknown
+                  - name: platform
+                    value: RHPDS
+                  - name: uuid
+                    value: 04ee89a1-a2eb-5d88-91c3-afdde780cd17

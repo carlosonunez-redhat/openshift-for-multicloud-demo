@@ -7,6 +7,12 @@ application between two clusters in separate cloud providers.
 Contact anyone in the [MAINTAINERS](./MAINTAINERS) file if you have questions
 or need help!
 
+## Prerequisites
+
+- Existing OpenShift clusters in AWS and GCP (tested with 4.19)
+- AWS IAM user with an `AdministratorAccess` policy mapping.
+- GCP IAM user with admin-level permissions in a GCP project.
+
 ### 🛫 Deploy the Environment
 
 - [Clone this repository](#clone-this-repository)
@@ -81,3 +87,15 @@ _Work in progress._
 ### 🛬 Tear everything down!
 
 _Work in progress._
+
+### Customizations
+
+#### Adding workers
+
+You might need to add additional workers to your existing clusters depending on
+the app being demonstrated. To do that:
+
+1. In the `infra/cluster/aws/kustomization.yaml` file, add `- machinesets.yaml` to the `resources` property.
+2. Modify the YAML in the `patch` property within the `infra/cluster/aws/machinesets.yaml` file to
+   match your cluster's infrastructure ID and the networking/compute
+   configuration in your VPC.
