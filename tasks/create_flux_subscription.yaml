@@ -59,8 +59,6 @@
           - image-automation-controller
         cluster:
           type: openshift
-          multitenant: true
-          networkPolicy: true
         sync:
           kind: GitRepository
           name: cluster-config
