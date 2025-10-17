@@ -25,15 +25,15 @@ spec:
         metadata:
           name: cluster-dxjvm-gcv2n-infra-us-east-2b
           annotations:
-            machine.openshift.io/cluster-api-cluster: foo 
+            machine.openshift.io/cluster-api-cluster: cluster-dxjvm-gcv2n
         spec:
           selector:
             matchLabels:
-              machine.openshift.io/cluster-api-cluster: foo
+              machine.openshift.io/cluster-api-cluster: cluster-dxjvm-gcv2n
           template:
             metadata:
               labels:
-                machine.openshift.io/cluster-api-cluster: foo
+                machine.openshift.io/cluster-api-cluster: cluster-dxjvm-gcv2n
             spec:
               providerSpec:
                 instanceType: m6a.4xlarge

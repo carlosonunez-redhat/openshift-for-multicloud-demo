@@ -1,0 +1,55 @@
+apiVersion: machine.openshift.io/v1beta1
+kind: MachineSet
+metadata:
+  annotations:
+    machine.openshift.io/cluster-api-cluster: patch-me
+  name: patch-me
+  namespace: openshift-machine-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      machine.openshift.io/cluster-api-cluster: patch-me
+  template:
+    metadata:
+      labels:
+        machine.openshift.io/cluster-api-cluster: patch-me
+        machine.openshift.io/cluster-api-machine-role: worker
+        machine.openshift.io/cluster-api-machine-type: worker
+        machine.openshift.io/cluster-api-machineset: patch-me
+    spec:
+      providerSpec:
+        value:
+          ami:
+            id: ami-0adb8862ffe5cc2ab
+          apiVersion: machine.openshift.io/v1beta1
+          blockDevices:
+          - ebs:
+              encrypted: true
+              iops: 0
+              kmsKey:
+                arn: ""
+              volumeSize: 100
+              volumeType: gp2
+          capacityReservationId: ""
+          credentialsSecret:
+            name: aws-cloud-credentials
+          deviceIndex: 0
+          iamInstanceProfile:
+            id: patch-me
+          instanceType: patch-me
+          kind: AWSMachineProviderConfig
+          metadata:
+            creationTimestamp: null
+          metadataServiceOptions: {}
+          placement:
+            availabilityZone: us-east-2c
+            region: us-east-2
+          securityGroups: [] # patch-me
+          subnet: {} # patch-me
+          tags: [] # patch-me
+          userDataSecret:
+            name: patch-me
+status:
+  observedGeneration: 1
+  replicas: 0
