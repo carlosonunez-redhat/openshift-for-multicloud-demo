@@ -17,7 +17,9 @@ spec:
     secretRef:
       name: cluster-key
   patches:
-    - target:
+    - options:
+        allowNameChange: true
+      target:
         kind: MachineSet
         name: patch-me
         namespace: openshift-machine-api
