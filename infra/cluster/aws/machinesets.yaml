@@ -21,7 +21,7 @@ spec:
   patches:
     - target:
         kind: MachineSet
-        name: patch-me
+        name: aws-worker-infra
         namespace: openshift-machine-api
       patch: |-
         apiVersion: machine.openshift.io/v1beta1
