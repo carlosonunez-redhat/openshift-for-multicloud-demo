@@ -16,10 +16,10 @@ spec:
     provider: sops
     secretRef:
       name: cluster-key
+  namePrefix: cluster-dxjvm-gcv2n
+  nameSuffix: us-east-2b
   patches:
-    - options:
-        allowNameChange: true
-      target:
+    - target:
         kind: MachineSet
         name: patch-me
         namespace: openshift-machine-api
@@ -27,7 +27,6 @@ spec:
         apiVersion: machine.openshift.io/v1beta1
         kind: MachineSet
         metadata:
-          name: cluster-dxjvm-gcv2n-infra-us-east-2b
           annotations:
             machine.openshift.io/cluster-api-cluster: cluster-dxjvm-gcv2n
         spec:

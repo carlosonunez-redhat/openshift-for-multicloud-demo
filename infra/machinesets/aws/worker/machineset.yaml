@@ -3,7 +3,7 @@ kind: MachineSet
 metadata:
   annotations:
     machine.openshift.io/cluster-api-cluster: patch-me
-  name: patch-me
+  name: aws-worker-infra
   namespace: openshift-machine-api
 spec:
   replicas: 1
