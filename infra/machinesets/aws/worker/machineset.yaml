@@ -43,7 +43,7 @@ spec:
             creationTimestamp: null
           metadataServiceOptions: {}
           placement:
-            availabilityZone: us-east-2c
+            availabilityZone: patch-me
             region: us-east-2
           securityGroups: [] # patch-me
           subnet: {} # patch-me
