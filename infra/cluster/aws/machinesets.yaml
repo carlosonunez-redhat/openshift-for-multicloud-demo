@@ -16,8 +16,8 @@ spec:
     provider: sops
     secretRef:
       name: cluster-key
-  namePrefix: cluster-dxjvm-gcv2n
-  nameSuffix: us-east-2b
+  namePrefix: cluster-dxjvm-gcv2n-
+  nameSuffix: -us-east-2b
   patches:
     - target:
         kind: MachineSet
