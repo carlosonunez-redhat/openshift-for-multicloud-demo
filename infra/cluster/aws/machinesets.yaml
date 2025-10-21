@@ -21,7 +21,7 @@ spec:
   patches:
     - target:
         kind: MachineSet
-        name: cluster-dxjvm-gcv2n-worker-us-east-2b
+        name: worker
         namespace: openshift-machine-api
       patch: |-
         apiVersion: machine.openshift.io/v1beta1
