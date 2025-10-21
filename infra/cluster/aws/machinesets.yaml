@@ -38,6 +38,7 @@ spec:
             metadata:
               labels:
                 machine.openshift.io/cluster-api-cluster: cluster-dxjvm-gcv2n
+                machine.openshift.io/cluster-api-machineset: cluster-dxjvm-gcv2n-worker-us-east-2b
             spec:
               providerSpec:
                 value:
