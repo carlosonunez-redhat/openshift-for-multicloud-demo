@@ -1,7 +1,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: machine-sets
+  name: patch-me
   namespace: flux-system
 spec:
   interval: 1m0s
@@ -22,6 +22,8 @@ spec:
         name: patch-me
         namespace: openshift-machine-api
       patch: |-
+        apiVersion: machine.openshift.io/v1beta1
+        kind: MachineSet
         metadata:
           name: cluster-dxjvm-gcv2n-infra-us-east-2b
           annotations:
