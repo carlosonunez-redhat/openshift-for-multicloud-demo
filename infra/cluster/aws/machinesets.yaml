@@ -16,8 +16,8 @@ spec:
     provider: sops
     secretRef:
       name: cluster-key
-  namePrefix: cluster-dxjvm-gcv2n-
-  nameSuffix: -us-east-2b
+  namePrefix: cluster-dxjvm-gcv2n-additional-
+  nameSuffix: -us-east-2c
   patches:
     - target:
         kind: MachineSet
@@ -27,7 +27,7 @@ spec:
         apiVersion: machine.openshift.io/v1beta1
         kind: MachineSet
         metadata:
-          name: cluster-dxjvm-gcv2n-infra-us-east-2b
+          name: cluster-dxjvm-gcv2n-infra-us-east-2c
           annotations:
             machine.openshift.io/cluster-api-cluster: cluster-dxjvm-gcv2n
         spec:
@@ -38,7 +38,7 @@ spec:
             metadata:
               labels:
                 machine.openshift.io/cluster-api-cluster: cluster-dxjvm-gcv2n
-                machine.openshift.io/cluster-api-machineset: cluster-dxjvm-gcv2n-worker-us-east-2b
+                machine.openshift.io/cluster-api-machineset: cluster-dxjvm-gcv2n-worker-us-east-2c
             spec:
               providerSpec:
                 value:
@@ -48,7 +48,7 @@ spec:
                   iamInstanceProfile:
                     id: cluster-dxjvm-gcv2n-worker-profile
                   placement:
-                    availabilityZone: us-east-2b
+                    availabilityZone: us-east-2c
                     region: us-east-2
                   subnet:
                     filters:
