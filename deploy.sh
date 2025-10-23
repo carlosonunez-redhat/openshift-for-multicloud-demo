@@ -133,7 +133,8 @@ EOF
   _update_secrets_kustomization_yaml() {
     kustomization_fp="$(dirname "$0")/infra/secrets/kustomization.yaml"
     current=$(find "$(dirname "$kustomization_fp")" -type f -name '*.yaml' -exec basename {} \; |
-    grep -Ev '(\.sops|kustomization).yaml' |
+      grep -Ev '(\.sops|kustomization).yaml' |
+      grep -Ev 'credential.yaml' |
       sort)
     last=$(yq -r '.resources[]' "$kustomization_fp" | sort)
     test "$current" == "$last" && return 0
@@ -145,9 +146,44 @@ EOF
     yq -ir ".resources = $current_json" "$kustomization_fp"
   }
 
+  _write_cloud_secret_if_pgp_fp_changed() {
+    local creds yaml
+    creds=$(sops decrypt --extract '["environments"]' "$CONFIG_YAML_PATH" |
+      yq -o=j -I=0 -r '.[] | select(.name == "'"$1"'") | .cloud_config.credentials')
+    if test -z "$creds"
+    then
+      >&2 echo "ERROR: Couldn't find cloud config credentials for $1"
+      return 1
+    fi
+    yaml="$(cat <<-EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloud-creds
+  namespace: openshift-multicluster-engine
+data: {}
+EOF
+)"
+    yaml=$(yq -r ".data = $creds" <<< "$yaml")
+    secret_dir="$(dirname "$0")/infra/secrets/cloud_credentials/$1"
+    test -d "$secret_dir" || mkdir -p "$secret_dir"
+    cat >"$secret_dir/kustomization.yaml" <<-EOF
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- credential.yaml
+EOF
+    _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
+      "$secret_dir/credential.yaml" \
+      '.sops.pgp[0].fp' \
+      "$yaml"
+  }
+
   _write_cluster_sops_config_if_pgp_fp_changed
   _write_pull_secrets_for_cluster_components_if_pgp_fp_changed \
     'operators/acm'
+  _write_cloud_secret_if_pgp_fp_changed 'aws'
+  _write_cloud_secret_if_pgp_fp_changed 'gcp'
   _update_secrets_kustomization_yaml
 }
 
