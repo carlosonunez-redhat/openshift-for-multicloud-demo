@@ -4,4 +4,3 @@ resources:
   - operators.yaml
   - resources.yaml
   - secrets.yaml
-  - machinesets.yaml
