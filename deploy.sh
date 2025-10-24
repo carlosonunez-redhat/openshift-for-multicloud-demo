@@ -16,6 +16,20 @@ ENVIRONMENT VARIABLES
 EOF
 }
 
+_ssh_private_key() {
+  sops decrypt --extract '["common"]["gitops"]["repo"]["secrets"]["ssh_key"]' config.yaml; echo
+}
+
+_ssh_public_key() {
+  local tmp
+  trap 'rc=$?; test -f "$tmp" && rm "$tmp"; trap - RETURN; return $rc' RETURN
+  trap 'rc=$?; test -f "$tmp" && rm "$tmp"; exit $rc' INT HUP EXIT
+  tmp=$(mktemp /tmp/tmp_XXXXXXXXXXX)
+  _ssh_private_key > "$tmp"
+  chmod 600 "$tmp"
+  ssh-keygen -yf "$tmp"
+}
+
 _container() {
   "$CONTAINER_BIN" "$@"
 }
@@ -192,14 +206,7 @@ EOF
   }
 
   _write_ssh_key_secret() {
-    trap 'rc=$?; test -f "$ssh_key" && rm "$ssh_key"; trap - RETURN; return $rc' RETURN
-    trap 'rc=$?; test -f "$ssh_key" && rm "$ssh_key"; exit $rc' INT HUP EXIT
     secret_dir="$(dirname "$0")/infra/secrets"
-    ssh_key=$(mktemp /tmp/ssh_key_XXXXXXXXXXX)
-    sops decrypt --extract '["common"]["gitops"]["repo"]["secrets"]["ssh_key"]' config.yaml  > "$ssh_key"
-    echo >> "$ssh_key"
-    chmod 600 "$ssh_key"
-    ssh_pubkey="$(ssh-keygen -yf "$ssh_key")"
     _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
       "$secret_dir/ssh_key.yaml" \
       '.sops.pgp[0].fp' \
@@ -211,10 +218,32 @@ metadata:
   namespace: openshift-multicluster-engine
 type: Opaque
 data:
-  ssh-privatekey: $(base64 -w 0 < "$ssh_key")
-  ssh-publickey: "$ssh_pubkey"
+  ssh-privatekey: $(_ssh_private_key | base64 -w 0)
+  ssh-publickey: $(_ssh_public_key | base64 -w 0)
 EOF
 )"
+  }
+
+  _write_installconfig_cloud_secrets() {
+    local pull_secret ssh_key secret_dir f domain region
+    pull_secret=$(_cluster_pull_secret | base64 -w 0)
+    ssh_key=$(_ssh_private_key | base64 -w 0)
+    for cloud in "$@"
+    do
+      secret_dir="$(dirname "$0")/infra/secrets"
+        f="${secret_dir}/installconfigs/${cloud}/installconfig.yaml"
+        >&2 echo "INFO: Updating installconfig: $f"
+        test "$(sops filestatus "$f" | yq -r '.encrypted')" == "false" &&
+          sops encrypt --in-place "$f"
+        domain=$(sops decrypt "$CONFIG_YAML_PATH" |
+          yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.domain' | base64 -w 0)
+        region=$(sops decrypt "$CONFIG_YAML_PATH" |
+          yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.region' | base64 -w 0)
+        sops set "$f" '["data"]["baseDomain"]' "\"$domain\""
+        sops set "$f" '["data"]["platform"]["aws"]["region"]' "\"$region\""
+        sops set "$f" '["data"]["pullSecret"]' "\"$pull_secret\""
+        sops set "$f" '["data"]["sshKey"]' "\"$ssh_key\""
+    done
   }
 
   _write_cluster_sops_config_if_pgp_fp_changed
@@ -223,6 +252,7 @@ EOF
   _write_cloud_secret_if_pgp_fp_changed 'aws'
   _write_cloud_secret_if_pgp_fp_changed 'gcp' 'service_account.json:/osServiceAccount.json:'
   _write_ssh_key_secret
+  _write_installconfig_cloud_secrets 'aws' 'gcp'
   _update_secrets_kustomization_yaml
 }
 
