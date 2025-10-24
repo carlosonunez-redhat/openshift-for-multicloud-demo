@@ -164,7 +164,7 @@ metadata:
 data: {}
 EOF
 )"
-    yaml=$(yq -r ".data = $creds" <<< "$yaml")
+    yaml=$(yq -r ".data = ($creds | map_values(@base64))" <<< "$yaml")
     secret_dir="$(dirname "$0")/infra/secrets/cloud_credentials/$1"
     test -d "$secret_dir" || mkdir -p "$secret_dir"
     cat >"$secret_dir/kustomization.yaml" <<-EOF
