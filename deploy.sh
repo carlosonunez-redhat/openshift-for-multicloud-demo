@@ -94,12 +94,18 @@ prepare_cluster_secrets() {
   }
 
   _write_pull_secrets_for_cluster_components_if_pgp_fp_changed() {
-    for component in "$@"
+    local component namespace metadata
+    for kvp in "$@"
     do
-      metadata="name: ocp-pull-secret"
-      test -f "$(dirname "$0")/infra/${component}/namespace.yaml" &&
-        metadata="$metadata,namespace: $(yq -r .metadata.name \
-          "$(dirname "$0")/infra/${component}/namespace.yaml")"
+      component="$(cut -f1 -d ';' <<< "$kvp")"
+      namespace="$(cut -f2 -d ';' <<< "$kvp")"
+      if test -z "$namespace" && test -f "$(dirname "$0")/infra/${component}/namespace.yaml"
+      then namespace=$(yq -r .metadata.name \
+          "$(dirname "$0")/infra/${component}/namespace.yaml")
+      elif test -z "$namespace"
+      then namespace=default
+      fi
+      metadata="name: ocp-pull-secret,namespace: $namespace"
       _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
         "$(dirname "$0")/infra/secrets/$(basename "$component").yaml" \
         '.sops.pgp[0].fp' \
@@ -181,7 +187,7 @@ EOF
 
   _write_cluster_sops_config_if_pgp_fp_changed
   _write_pull_secrets_for_cluster_components_if_pgp_fp_changed \
-    'operators/acm'
+    'operators/acm;hive'
   _write_cloud_secret_if_pgp_fp_changed 'aws'
   _write_cloud_secret_if_pgp_fp_changed 'gcp'
   _update_secrets_kustomization_yaml
