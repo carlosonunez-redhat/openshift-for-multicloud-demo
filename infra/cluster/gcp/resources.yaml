@@ -16,11 +16,8 @@ spec:
     - target:
         kind: HiveConfig
         name: hive
-      patch: |-
-        apiVersion: hive.openshift.io/v1
-        kind: HiveConfig
-        metadata:
-          name: hive
-        spec:
-          globalPullSecretRef:
+      patch: |
+        - op: replace
+          path: /spec/globalPullSecretRef
+          value:
             name: ocp-pull-secret
