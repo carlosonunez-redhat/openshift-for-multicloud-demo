@@ -12,3 +12,15 @@ spec:
   path: ./infra/resources/acm
   wait: true
   prune: true
+  patches:
+    - target:
+        kind: HiveConfig
+        name: hive
+      patch: |-
+        apiVersion: hive.openshift.io/v1
+        kind: HiveConfig
+        metadata:
+          name: hive
+        spec:
+          globalPullSecretRef:
+            name: ocp-pull-secret
