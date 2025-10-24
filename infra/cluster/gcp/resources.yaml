@@ -12,12 +12,3 @@ spec:
   path: ./infra/resources/acm
   wait: true
   prune: true
-  patches:
-    - target:
-        kind: HiveConfig
-        name: hive
-      patch: |
-        - op: replace
-          path: /spec/globalPullSecretRef
-          value:
-            name: ocp-pull-secret
