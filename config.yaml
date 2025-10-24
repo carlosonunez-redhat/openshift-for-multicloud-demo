@@ -55,19 +55,19 @@ environments:
       cloud_config:
         # encrypted
         credentials:
-            aws_access_key_id: ENC[AES256_GCM,data:JmDQMPfE/tjGVNv5k5FOR4Vfp4E=,iv:I8c1QVS5E+YEPdo90FszepO4KnkhWdm+REsBDuVNGA0=,tag:hqcZmk63OVYTu3LXyx49RQ==,type:str]
-            aws_secret_access_key: ENC[AES256_GCM,data:H4QzLQ1o+YVivOxUjCr8e8zgv1qTCURdRUGJ0Ja3SgOGiUU04VzNmQ==,iv:PyvDwGBD5wl2YQmdkuZZ2kVx3M0hsme0ErTn2uOS7V4=,tag:lShy4FCzsuOoIT+D2sORLw==,type:str]
+            aws_access_key_id: ENC[AES256_GCM,data:a05PpTnwGLkDM28uCCvke6OC8ZU=,iv:6WU/15r27UH4M+HTLQqf80uyizyDz/bRbbVfNQ1j4A8=,tag:Xp5nI6GpEas0ZJ0yN9lVIw==,type:str]
+            aws_secret_access_key: ENC[AES256_GCM,data:Zd/bo3awO4PdOGkYXx+yrmhe6QjgMlt5KyY7Xq+i8ADr+TA1vHlQsQ==,iv:gwP/1F0xu/v15ljL922fS6cPeMflecUu233pyy8/o4I=,tag:IT9Yyf/cNeAgyt4C7//OuQ==,type:str]
       cluster:
         kubeconfig:
             apiVersion: v1
             clusters:
                 - cluster:
-                    certificate-authority-data:**REMOVED**
-                    server: https://api.cluster-wvlg5.wvlg5.sandbox5230.opentlc.com:6443
-                  name: cluster-wvlg5
+                    certificate-authority-data: ***REMOVED***
+                    server: https://api.cluster-hc586.hc586.sandbox1079.opentlc.com:6443
+                  name: cluster-hc586
             contexts:
                 - context:
-                    cluster: cluster-wvlg5
+                    cluster: cluster-hc586
                     user: admin
                   name: admin
             current-context: admin
@@ -79,8 +79,8 @@ environments:
                     client-certificate-data:**REMOVED**
                     client-key-data:**REMOVED**
 sops:
-    lastmodified: "2025-10-23T22:40:23Z"
-    mac: ENC[AES256_GCM,data:U1pZgvJuuu40HlfILbvRJFfQpJMr7PUX8JgFuE5M2wRIlEIks7CCW7zTkn3BHCLlkAP559Ck1z033CfqENRGvFueYQSzcY4jaLBdloO/MoM1b6ztW0MtkJLaI62DjfQ1jU6cgGNQ3ssHot7/Dz7k2fYWvHOvqMc0xulCyXmj6bI=,iv:wp5Wf3WBUyZHzDaCPMn+6nu2ggLbnYcQFQ6SvoVIVuI=,tag:AFzLvdtL+/DrgjrSK5U+hg==,type:str]
+    lastmodified: "2025-10-24T17:05:06Z"
+    mac: ENC[AES256_GCM,data:VTb2QEu+8U9R6DigaRT/8F/FC9akLdDmKYGyG8hZSRK1tNjbODAh2H2sdiGSwDToJmmkd8DHT6PzBP/cF1dG2V7JqwZ/LarNnv0hEwjVltphD6tlFPVTfRqfV/FmNEVPMsWldb8dWOa2Uzb7qtninbODtBeYz1PCtrj2L0CkIcw=,iv:2eUALJmubMOtl7+0GcX/uCp2aNmELrFLIc2noUdmhBw=,tag:eMdZbvB7NF2/ndgaUV8szw==,type:str]
     pgp:
         - created_at: "2025-09-30T22:07:13Z"
           enc: |-
