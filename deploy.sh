@@ -171,6 +171,9 @@ data: {}
 EOF
 )"
     yaml=$(yq -r ".data = ($creds | map_values(@base64))" <<< "$yaml")
+    for replacement in "${@:1}"
+    do yaml=$(sed "s/$replacement/g" <<< "$yaml")
+    done
     secret_dir="$(dirname "$0")/infra/secrets/cloud_credentials/$1"
     test -d "$secret_dir" || mkdir -p "$secret_dir"
     cat >"$secret_dir/kustomization.yaml" <<-EOF
@@ -189,7 +192,7 @@ EOF
   _write_pull_secrets_for_cluster_components_if_pgp_fp_changed \
     'operators/acm;hive'
   _write_cloud_secret_if_pgp_fp_changed 'aws'
-  _write_cloud_secret_if_pgp_fp_changed 'gcp'
+  _write_cloud_secret_if_pgp_fp_changed 'gcp' 'service_account.json/osServiceAccount.json'
   _update_secrets_kustomization_yaml
 }
 
