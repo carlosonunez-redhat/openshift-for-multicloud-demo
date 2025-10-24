@@ -191,11 +191,38 @@ EOF
       "$yaml"
   }
 
+  _write_ssh_key_secret() {
+    trap 'rc=$?; test -f "$ssh_key" && rm "$ssh_key"; trap - RETURN; return $rc' RETURN
+    trap 'rc=$?; test -f "$ssh_key" && rm "$ssh_key"; exit $rc' INT HUP EXIT
+    secret_dir="$(dirname "$0")/infra/secrets"
+    ssh_key=$(mktemp /tmp/ssh_key_XXXXXXXXXXX)
+    sops decrypt --extract '["common"]["gitops"]["repo"]["secrets"]["ssh_key"]' config.yaml  > "$ssh_key"
+    echo >> "$ssh_key"
+    chmod 600 "$ssh_key"
+    ssh_pubkey="$(ssh-keygen -yf "$ssh_key")"
+    _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
+      "$secret_dir/ssh_key.yaml" \
+      '.sops.pgp[0].fp' \
+      "$(cat <<-EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cluster-ssh-key
+  namespace: openshift-multicluster-engine
+type: Opaque
+data:
+  ssh-privatekey: $(base64 -w 0 < "$ssh_key")
+  ssh-publickey: "$ssh_pubkey"
+EOF
+)"
+  }
+
   _write_cluster_sops_config_if_pgp_fp_changed
   _write_pull_secrets_for_cluster_components_if_pgp_fp_changed \
     'operators/acm;hive'
   _write_cloud_secret_if_pgp_fp_changed 'aws'
   _write_cloud_secret_if_pgp_fp_changed 'gcp' 'service_account.json:/osServiceAccount.json:'
+  _write_ssh_key_secret
   _update_secrets_kustomization_yaml
 }
 
