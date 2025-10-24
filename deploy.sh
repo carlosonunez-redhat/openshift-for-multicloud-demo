@@ -155,7 +155,7 @@ EOF
     current=$(find "$(dirname "$kustomization_fp")" -type f -name '*.yaml' -exec basename {} \; |
       grep -Ev '(\.sops|kustomization).yaml' |
       grep -Ev 'credential.yaml' |
-      sort)
+      sort -u)
     last=$(yq -r '.resources[]' "$kustomization_fp" | sort)
     test "$current" == "$last" && return 0
     current_json=$(printf "[%s]" \
