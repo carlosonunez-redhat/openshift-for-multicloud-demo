@@ -243,10 +243,10 @@ EOF
       current_yaml=$(sops decrypt --extract '["data"]["install-config.yaml"]' "$f" | base64 -d | yq .)
       current=$(yq -r "$key" <<< "$current_yaml")
       # need to use jq here to properly test equality of JSON objects, as the current value
-      # might be formatted differently.
+      # might be formatted differently. (use 'true' to drop the return code, as it's not needed.)
       diff=$(diff \
         <(_quote_if_json_string "$current" | jq -r .) \
-        <(_quote_if_json_string "$value" | jq -r .))
+        <(_quote_if_json_string "$value" | jq -r .)) || true
       test -z "$diff" && return 0
       >&2 echo "INFO: Updating key '$key' in  installconfig '$f' (diff: $diff)"
       new_yaml=$(yq -o=j -I=0 -r "$key |= $(_quote_if_json_string "$value")" <<< "$current_yaml" |
