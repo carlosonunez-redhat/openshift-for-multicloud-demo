@@ -152,9 +152,8 @@ EOF
 
   _update_secrets_kustomization_yaml() {
     kustomization_fp="$(dirname "$0")/infra/secrets/kustomization.yaml"
-    current=$(find "$(dirname "$kustomization_fp")" -type f -name '*.yaml' -exec basename {} \; |
+    current=$(find "$(dirname "$kustomization_fp")" -maxdepth 1 -type f -name '*.yaml' -exec basename {} \; |
       grep -Ev '(\.sops|kustomization).yaml' |
-      grep -Ev 'credential.yaml' |
       sort -u)
     last=$(yq -r '.resources[]' "$kustomization_fp" | sort)
     test "$current" == "$last" && return 0
