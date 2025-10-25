@@ -111,13 +111,14 @@ prepare_cluster_secrets() {
     local component namespace metadata
     for kvp in "$@"
     do
-      component="$(cut -f1 -d ';' <<< "$kvp")"
-      namespace="$(cut -f2 -d ';' <<< "$kvp")"
+      component="$(awk -F ';' '{print $1}' <<< "$kvp")"
+      namespace="$(awk -F ';' '{print $2}' <<< "$kvp")"
       if test -z "$namespace" && test -f "$(dirname "$0")/infra/${component}/namespace.yaml"
       then namespace=$(yq -r .metadata.name \
           "$(dirname "$0")/infra/${component}/namespace.yaml")
-      elif test -z "$namespace"
-      then namespace=default
+      else
+        >&2 echo "ERROR: namespace not defined at $(dirname "$0")/infra/$component/namespace.yaml"
+        return 1
       fi
       metadata="name: ocp-pull-secret,namespace: $namespace"
       _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
@@ -286,8 +287,7 @@ YAML
   }
 
   _write_cluster_sops_config_if_pgp_fp_changed
-  _write_pull_secrets_for_cluster_components_if_pgp_fp_changed \
-    'operators/acm;hive'
+  _write_pull_secrets_for_cluster_components_if_pgp_fp_changed 'operators/multiclusterengine'
   _write_cloud_secret_if_pgp_fp_changed 'aws'
   _write_cloud_secret_if_pgp_fp_changed 'gcp' 'service_account.json:/osServiceAccount.json:'
   _write_ssh_key_secret
