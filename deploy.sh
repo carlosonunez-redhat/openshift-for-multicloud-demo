@@ -226,16 +226,27 @@ EOF
   _write_installconfig_cloud_secrets() {
     _update_if_different() {
       _quote_if_json_string() {
-        grep -E '^({|\[)' <<< "$1" || echo "\"$1\""
+        # replace newlines with literal newlines to avoid JSON parse errors while diffing,
+        # but only if the string passed in is not an array or object.
+        # https://superuser.com/a/1658619
+        grep -E '^({|\[)' <<< "$1" || { echo "\"$1\"" |
+          sed 's/$/\\n/g' |
+          tr -d '\n' |
+          sed -E 's/\\n$//'; }
       }
-      local file key value new_yaml current_yaml
+      local file key value new_yaml current_yaml diff
       file="$1"
       key="$2"
       value="$3"
       current_yaml=$(sops decrypt --extract '["data"]["install-config.yaml"]' "$f" | base64 -d | yq .)
       current=$(yq -r "$key" <<< "$current_yaml")
-      test "$current" == "$value" && return 0
-      >&2 echo "INFO: Updating key '$key' in  installconfig '$f'"
+      # need to use jq here to properly test equality of JSON objects, as the current value
+      # might be formatted differently.
+      diff=$(diff \
+        <(_quote_if_json_string "$current" | jq -r .) \
+        <(_quote_if_json_string "$value" | jq -r .))
+      test -z "$diff" && return 0
+      >&2 echo "INFO: Updating key '$key' in  installconfig '$f' (diff: $diff)"
       new_yaml=$(yq -o=j -I=0 -r "$key |= $(_quote_if_json_string "$value")" <<< "$current_yaml" |
         base64 -w 0)
       test -z "$new_yaml" && return 1
@@ -284,6 +295,36 @@ YAML
   _update_secrets_kustomization_yaml
 }
 
+update_managedcluster_kustomizations() {
+  set -x
+  local patches domain cluster_name region cluster_ocp_version
+  for cloud in "$@"
+  do
+    f="infra/cluster/$cloud/managedclusters.yaml"
+    patches=$(yq -r '.spec.patches[] | select(.target.name == "cluster") | .patch' "$f" |
+      yq -o=j -I=0 .)
+    test -z "$patches" && return 1
+    domain=$(sops decrypt "$CONFIG_YAML_PATH" |
+      yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.domain')
+    cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
+      yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
+    region=$(sops decrypt "$CONFIG_YAML_PATH" |
+      yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.region')
+    cluster_ocp_version=$(sops decrypt "$CONFIG_YAML_PATH" |
+      yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.openshift_image_set')
+    for kvp in "baseDomain;$domain" "clusterName;$cluster_name" \
+      "platform/region;$region" "imageSetRef;$cluster_ocp_version"
+    do
+      k="$(cut -f1 -d ';' <<< "$kvp")"
+      v="$(cut -f2 -d ';' <<< "$kvp")"
+      patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
+    done
+    yq -i \
+      "(.spec.patches[] | select(.target.name == \"cluster\")).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
+      "$f"
+  done
+}
+
 show_help_if_requested() {
   grep -Eq '[-]{1,2}help' <<< "$@" || return 0
   usage
@@ -292,8 +333,9 @@ show_help_if_requested() {
 
 set -e
 show_help_if_requested "$@"
-prepare_cluster_secrets
 preflight
+prepare_cluster_secrets
+update_managedcluster_kustomizations 'aws' 'gcp'
 create_data_volume
 upload_config_into_data_volume
 deploy
