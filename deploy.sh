@@ -274,6 +274,17 @@ EOF
       _update_if_different "$1" "$2" "$3" 'true'
     }
 
+    _perform_cloud_specific_updates_aws() {
+      return 0
+    }
+
+    _perform_cloud_specific_updates_gcp() {
+      local project
+      project=$(sops decrypt "$CONFIG_YAML_PATH" |
+        yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.credentials.project')
+      _update_if_different "$1" '.platform.gcp.projectID' "$project"
+    }
+
     local secret_dir f domain region yaml
     secret_dir="$(dirname "$0")/infra/secrets"
     for cloud in "$@"
@@ -304,6 +315,7 @@ YAML
       _update_if_different "$f" ".platform.$cloud.region" "$region"
       _update_if_different "$f" '.pullSecret' 'ocp-pull-secret'
       _update_if_different "$f" '.sshKey' "$(_ssh_public_key)"
+      "_perform_cloud_specific_updates_$cloud" "$f"
     done
   }
 
