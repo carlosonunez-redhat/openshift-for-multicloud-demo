@@ -12,6 +12,7 @@ spec:
   path: ./infra/components/managedclusters/gcp
   wait: true
   prune: true
+  force: true
   decryption:
     provider: sops
     secretRef:

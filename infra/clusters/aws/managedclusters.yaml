@@ -12,6 +12,7 @@ spec:
   path: ./infra/components/managedclusters/aws
   wait: true
   prune: true
+  force: true
   decryption:
     provider: sops
     secretRef:
