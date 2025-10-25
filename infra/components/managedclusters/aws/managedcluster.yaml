@@ -15,7 +15,7 @@ spec:
     imageSetRef:
       name: replace-me
     installConfigSecretRef:
-      name: replace-me
+      name: installconfig
     sshPrivateKeySecretRef:
       name: replace-me
   pullSecretRef:
