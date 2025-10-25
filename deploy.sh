@@ -79,7 +79,7 @@ prepare_cluster_secrets() {
   }
 
   _cluster_pull_secret() {
-    sops decrypt -extract '["common"]["ocp_pull_secret"]' "$CONFIG_YAML_PATH"
+    sops decrypt --extract '["common"]["ocp_pull_secret"]' "$CONFIG_YAML_PATH"
   }
 
   _write_file_if_pgp_fp_differs_from_cluster_pgp_fp() {
@@ -236,24 +236,44 @@ EOF
           tr -d '\n' |
           sed -E 's/\\n$//'; }
       }
-      local file key value new_yaml current_yaml diff
+
+      local file key value new_yaml current_yaml diff value_is_string
       file="$1"
       key="$2"
       value="$3"
+      value_is_string="${4:-false}"
       current_yaml=$(sops decrypt --extract '["data"]["install-config.yaml"]' "$f" | base64 -d | yq .)
       current=$(yq -r "$key" <<< "$current_yaml")
       # need to use jq here to properly test equality of JSON objects, as the current value
       # might be formatted differently. (use 'true' to drop the return code, as it's not needed.)
-      diff=$(diff \
-        <(_quote_if_json_string "$current" | jq -r .) \
-        <(_quote_if_json_string "$value" | jq -r .)) || true
+      if grep -Eiq '^true$' <<< "$value_is_string"
+      then
+        diff=$(diff \
+          <(echo "$current" | jq -r 'tostring') \
+          <(echo "$value" | jq -r 'tostring')) || true
+      else
+        diff=$(diff \
+          <(_quote_if_json_string "$current" | jq -r .) \
+          <(_quote_if_json_string "$value" | jq -r .)) || true
+      fi
       test -z "$diff" && return 0
       >&2 echo "INFO: Updating key '$key' in  installconfig '$f' (diff: $diff)"
-      new_yaml=$(yq -o=j -I=0 -r "$key |= $(_quote_if_json_string "$value")" <<< "$current_yaml" |
-        base64 -w 0)
+      if grep -Eiq '^true$' <<< "$value_is_string"
+      then
+        new_yaml=$(yq -o=j -I=0 -r "$key |= ($value|to_json|tostring)" <<< "$current_yaml" |
+          base64 -w 0)
+      else
+        new_yaml=$(yq -o=j -I=0 -r "$key |= $(_quote_if_json_string "$value")" <<< "$current_yaml" |
+          base64 -w 0)
+      fi
       test -z "$new_yaml" && return 1
       sops set "$f" '["data"]["install-config.yaml"]' "\"$new_yaml\""
     }
+
+    _update_if_different_as_string() {
+      _update_if_different "$1" "$2" "$3" 'true'
+    }
+
     local secret_dir f domain region yaml
     secret_dir="$(dirname "$0")/infra/secrets"
     for cloud in "$@"
@@ -282,7 +302,7 @@ YAML
         yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.region')
       _update_if_different "$f" '.baseDomain' "$domain"
       _update_if_different "$f" ".platform.$cloud.region" "$region"
-      _update_if_different "$f" '.pullSecret' "$(_cluster_pull_secret)"
+      _update_if_different_as_string "$f" '.pullSecret' "$(_cluster_pull_secret)"
       _update_if_different "$f" '.sshKey' "$(_ssh_private_key)"
     done
   }
