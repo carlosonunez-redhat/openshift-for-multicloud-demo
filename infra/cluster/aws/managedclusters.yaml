@@ -29,7 +29,7 @@ spec:
           path: /spec/clusterName
           value: managed-cluster-aws
         - op: replace
-          path: /spec/platform/region
+          path: /spec/platform/aws/region
           value: us-east-2
         - op: replace
           path: /spec/provisioning/imageSetRef/name
@@ -38,5 +38,5 @@ spec:
           path: /spec/provisioning/sshPrivateKeySecretRef/name
           value: cluster-ssh-key
         - op: replace
-          path: /spec/provisioning/pullSecretRef/name
+          path: /spec/pullSecretRef/name
           value: ocp-pull-secret

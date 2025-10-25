@@ -296,7 +296,6 @@ YAML
 }
 
 update_managedcluster_kustomizations() {
-  set -x
   local patches domain cluster_name region cluster_ocp_version
   for cloud in "$@"
   do
@@ -313,7 +312,7 @@ update_managedcluster_kustomizations() {
     cluster_ocp_version=$(sops decrypt "$CONFIG_YAML_PATH" |
       yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.openshift_image_set')
     for kvp in "baseDomain;$domain" "clusterName;$cluster_name" \
-      "platform/region;$region" "imageSetRef;$cluster_ocp_version"
+      "region;$region" "imageSetRef;$cluster_ocp_version"
     do
       k="$(cut -f1 -d ';' <<< "$kvp")"
       v="$(cut -f2 -d ';' <<< "$kvp")"
