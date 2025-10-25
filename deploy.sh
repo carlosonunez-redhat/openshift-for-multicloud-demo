@@ -302,8 +302,8 @@ YAML
         yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.region')
       _update_if_different "$f" '.baseDomain' "$domain"
       _update_if_different "$f" ".platform.$cloud.region" "$region"
-      _update_if_different_as_string "$f" '.pullSecret' "$(_cluster_pull_secret)"
-      _update_if_different "$f" '.sshKey' "$(_ssh_private_key)"
+      _update_if_different "$f" '.pullSecret' 'ocp-pull-secret'
+      _update_if_different "$f" '.sshKey' "$(_ssh_public_key)"
     done
   }
 
