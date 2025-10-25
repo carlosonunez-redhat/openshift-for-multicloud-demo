@@ -224,6 +224,16 @@ EOF
   }
 
   _write_installconfig_cloud_secrets() {
+    _update_if_different() {
+      local file key value
+      file="$1"
+      key="$2"
+      value="$3"
+      current=$(sops decrypt --extract "$key" "$f")
+      test "$current" == "$value" && return 0
+      >&2 echo "INFO: Updating key '$key' in  installconfig '$f'"
+      sops set "$f" "$key" "\"$value\""
+    }
     local pull_secret ssh_key secret_dir f domain region
     pull_secret=$(_cluster_pull_secret | base64 -w 0)
     ssh_key=$(_ssh_private_key | base64 -w 0)
@@ -231,17 +241,16 @@ EOF
     do
       secret_dir="$(dirname "$0")/infra/secrets"
         f="${secret_dir}/installconfigs/${cloud}/installconfig.yaml"
-        >&2 echo "INFO: Updating installconfig: $f"
         test "$(sops filestatus "$f" | yq -r '.encrypted')" == "false" &&
           sops encrypt --in-place "$f"
         domain=$(sops decrypt "$CONFIG_YAML_PATH" |
           yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.domain' | base64 -w 0)
         region=$(sops decrypt "$CONFIG_YAML_PATH" |
           yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.region' | base64 -w 0)
-        sops set "$f" '["data"]["baseDomain"]' "\"$domain\""
-        sops set "$f" '["data"]["platform"]["aws"]["region"]' "\"$region\""
-        sops set "$f" '["data"]["pullSecret"]' "\"$pull_secret\""
-        sops set "$f" '["data"]["sshKey"]' "\"$ssh_key\""
+        _update_if_different "$f" '["data"]["baseDomain"]' "$domain"
+        _update_if_different "$f" '["data"]["platform"]["aws"]["region"]' "$region"
+        _update_if_different "$f" '["data"]["pullSecret"]' "$pull_secret"
+        _update_if_different "$f" '["data"]["sshKey"]' "$ssh_key"
     done
   }
 
