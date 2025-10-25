@@ -1,0 +1,42 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: managed-clusters
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: cluster-config
+    namespace: flux-system
+  path: ./infra/managedclusters/gcp
+  wait: true
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: cluster-key
+  patches:
+    - target:
+        kind: ClusterDeployment
+        name: cluster
+        namespace: openshift-multicluster-engine
+      patch: |-
+        - op: replace
+          path: /spec/baseDomain
+          value: djplm.gcp.redhatworkshops.io
+        - op: replace
+          path: /spec/clusterName
+          value: managed-cluster-gcp
+        - op: replace
+          path: /spec/platform/region
+          value: us-east1
+        - op: replace
+          path: /spec/provisioning/imageSetRef/name
+          value: img4.18.26-multi-appsub
+        - op: replace
+          path: /spec/provisioning/sshPrivateKeySecretRef/name
+          value: cluster-ssh-key
+        - op: replace
+          path: /spec/provisioning/pullSecretRef/name
+          value: ocp-pull-secret

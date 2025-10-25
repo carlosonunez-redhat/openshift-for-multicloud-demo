@@ -1,0 +1,22 @@
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  name: cluster
+  namespace: openshift-multicluster-engine
+spec:
+  baseDomain: replace-me
+  clusterName: replace-me
+  platform:
+    aws:
+      credentialsRef:
+        name: cloud-creds
+      region: replace-me
+  provisioning:
+    imageSetRef:
+      name: replace-me
+    installConfigSecretRef:
+      name: replace-me
+    sshPrivateKeySecretRef:
+      name: replace-me
+    pullSecretRef:
+      name: replace-me

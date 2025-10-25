@@ -4,3 +4,4 @@ resources:
   - operators.yaml
   - resources.yaml
   - secrets.yaml
+  - managedclusters.yaml
