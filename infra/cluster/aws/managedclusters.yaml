@@ -9,7 +9,7 @@ spec:
     kind: GitRepository
     name: cluster-config
     namespace: flux-system
-  path: ./infra/managedclusters/aws
+  path: ./infra/components/managedclusters/aws
   wait: true
   prune: true
   decryption:

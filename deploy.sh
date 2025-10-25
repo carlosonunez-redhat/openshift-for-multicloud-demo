@@ -108,16 +108,17 @@ prepare_cluster_secrets() {
   }
 
   _write_pull_secrets_for_cluster_components_if_pgp_fp_changed() {
-    local component namespace metadata
+    local components_dir component namespace metadata
+    components_dir="$(dirname "$0")/infra/components"
     for kvp in "$@"
     do
       component="$(awk -F ';' '{print $1}' <<< "$kvp")"
       namespace="$(awk -F ';' '{print $2}' <<< "$kvp")"
-      if test -z "$namespace" && test -f "$(dirname "$0")/infra/${component}/namespace.yaml"
+      if test -z "$namespace" && test -f "$components_dir/${component}/namespace.yaml"
       then namespace=$(yq -r .metadata.name \
-          "$(dirname "$0")/infra/${component}/namespace.yaml")
+          "$components_dir/${component}/namespace.yaml")
       else
-        >&2 echo "ERROR: namespace not defined at $(dirname "$0")/infra/$component/namespace.yaml"
+        >&2 echo "ERROR: namespace not defined at $components_dir/$component/namespace.yaml"
         return 1
       fi
       metadata="name: ocp-pull-secret,namespace: $namespace"
@@ -299,7 +300,7 @@ update_managedcluster_kustomizations() {
   local patches domain cluster_name region cluster_ocp_version
   for cloud in "$@"
   do
-    f="infra/cluster/$cloud/managedclusters.yaml"
+    f="infra/clusters/$cloud/managedclusters.yaml"
     patches=$(yq -r '.spec.patches[] | select(.target.name == "cluster") | .patch' "$f" |
       yq -o=j -I=0 .)
     test -z "$patches" && return 1

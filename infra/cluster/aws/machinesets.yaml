@@ -9,7 +9,7 @@ spec:
     kind: GitRepository
     name: cluster-config
     namespace: flux-system
-  path: ./infra/machinesets/aws/worker
+  path: ./infra/components/machinesets/aws/worker
   wait: true
   prune: true
   decryption:

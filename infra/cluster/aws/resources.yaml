@@ -9,6 +9,6 @@ spec:
     kind: GitRepository
     name: cluster-config
     namespace: flux-system
-  path: ./infra/resources/acm
+  path: ./infra/components/resources/acm
   wait: true
   prune: true

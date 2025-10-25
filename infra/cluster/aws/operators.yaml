@@ -9,6 +9,6 @@ spec:
     kind: GitRepository
     name: cluster-config
     namespace: flux-system
-  path: ./infra/operators
+  path: ./infra/components/operators
   wait: true
   prune: true
