@@ -64,5 +64,5 @@
           name: cluster-config
           url: "{{ common.gitops.repo.location.url }}"
           ref: "refs/heads/{{ common.gitops.repo.location.ref }}"
-          path: "infra/cluster/{{ env.name }}"
+          path: "infra/clusters/{{ env.name }}"
           pullSecret: "{{ git_repo_secret_ref }}"
