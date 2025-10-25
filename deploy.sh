@@ -225,32 +225,52 @@ EOF
 
   _write_installconfig_cloud_secrets() {
     _update_if_different() {
-      local file key value
+      _quote_if_json_string() {
+        grep -E '^({|\[)' <<< "$1" || echo "\"$1\""
+      }
+      local file key value new_yaml current_yaml
       file="$1"
       key="$2"
       value="$3"
-      current=$(sops decrypt --extract "$key" "$f")
+      current_yaml=$(sops decrypt --extract '["data"]["install-config.yaml"]' "$f" | base64 -d | yq .)
+      current=$(yq -r "$key" <<< "$current_yaml")
       test "$current" == "$value" && return 0
       >&2 echo "INFO: Updating key '$key' in  installconfig '$f'"
-      sops set "$f" "$key" "\"$value\""
+      new_yaml=$(yq -o=j -I=0 -r "$key |= $(_quote_if_json_string "$value")" <<< "$current_yaml" |
+        base64 -w 0)
+      test -z "$new_yaml" && return 1
+      sops set "$f" '["data"]["install-config.yaml"]' "\"$new_yaml\""
     }
-    local pull_secret ssh_key secret_dir f domain region
-    pull_secret=$(_cluster_pull_secret | base64 -w 0)
-    ssh_key=$(_ssh_private_key | base64 -w 0)
+    local secret_dir f domain region yaml
+    secret_dir="$(dirname "$0")/infra/secrets"
     for cloud in "$@"
     do
-      secret_dir="$(dirname "$0")/infra/secrets"
-        f="${secret_dir}/installconfigs/${cloud}/installconfig.yaml"
-        test "$(sops filestatus "$f" | yq -r '.encrypted')" == "false" &&
-          sops encrypt --in-place "$f"
-        domain=$(sops decrypt "$CONFIG_YAML_PATH" |
-          yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.domain' | base64 -w 0)
-        region=$(sops decrypt "$CONFIG_YAML_PATH" |
-          yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.region' | base64 -w 0)
-        _update_if_different "$f" '["data"]["baseDomain"]' "$domain"
-        _update_if_different "$f" '["data"]["platform"]["aws"]["region"]' "$region"
-        _update_if_different "$f" '["data"]["pullSecret"]' "$pull_secret"
-        _update_if_different "$f" '["data"]["sshKey"]' "$ssh_key"
+      f="${secret_dir}/installconfigs/${cloud}/installconfig.yaml"
+      template_f="${secret_dir}/templates/installconfigs/${cloud}.yaml"
+      if ! test -e "$f"
+      then
+        yaml=$(cat <<-YAML
+apiVersion: v1
+kind: Secret
+metadata:
+  name: installconfig
+  namespace: openshift-multicluster-engine
+data:
+  install-config.yaml: $(base64 -w 0 < "$template_f")
+YAML
+)
+        echo "$yaml" | sops --config "${secret_dir}/.sops.yaml" encrypt --filename-override "$f" --output "$f"
+      elif test "$(sops filestatus "$f" | yq -r '.encrypted')" == "false"
+      then sops --config "${secret_dir}/.sops.yaml" encrypt --in-place "$f"
+      fi
+      domain=$(sops decrypt "$CONFIG_YAML_PATH" |
+        yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.domain')
+      region=$(sops decrypt "$CONFIG_YAML_PATH" |
+        yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.region')
+      _update_if_different "$f" '.baseDomain' "$domain"
+      _update_if_different "$f" ".platform.$cloud.region" "$region"
+      _update_if_different "$f" '.pullSecret' "$(_cluster_pull_secret)"
+      _update_if_different "$f" '.sshKey' "$(_ssh_private_key)"
     done
   }
 
