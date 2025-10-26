@@ -45,11 +45,16 @@ spec:
         namespace: openshift-multicluster-engine
       patch: |-
         - op: replace
+          path: 
+        - op: replace
           path: /spec/baseDomain
           value: sandbox591.opentlc.com
         - op: replace
           path: /spec/clusterName
           value: managed-cluster-aws
+        - op: replace
+          path: /metadata/labels/region
+          value: us-east-2
         - op: replace
           path: /spec/platform/aws/region
           value: us-east-2

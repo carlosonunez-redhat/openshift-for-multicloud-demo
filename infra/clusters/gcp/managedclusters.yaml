@@ -51,6 +51,9 @@ spec:
           path: /spec/clusterName
           value: managed-cluster-gcp
         - op: replace
+          path: /metadata/labels/region
+          value: us-east1
+        - op: replace
           path: /spec/platform/gcp/region
           value: us-east1
         - op: replace
