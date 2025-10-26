@@ -19,10 +19,24 @@ spec:
       name: cluster-key
   patches:
     - target:
+        kind: MachinePool
+        name: cluster
+        namespace: openshift-multicluster-engine
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: managed-cluster-gcp-worker
+        - op: replace
+          path: /spec/clusterDeploymentRef/name
+          value: managed-cluster-gcp
+    - target:
         kind: KlusterletAddonConfig
         name: cluster
         namespace: openshift-multicluster-engine
       patch: |-
+        - op: replace
+          path: /metadata/name
+          value: managed-cluster-gcp
         - op: replace
           path: /spec/clusterName
           value: managed-cluster-gcp
@@ -34,6 +48,9 @@ spec:
         - op: replace
           path: /spec/baseDomain
           value: djplm.gcp.redhatworkshops.io
+        - op: replace
+          path: /metadata/name
+          value: managed-cluster-gcp
         - op: replace
           path: /spec/clusterName
           value: managed-cluster-gcp
