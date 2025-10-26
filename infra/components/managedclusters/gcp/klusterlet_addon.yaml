@@ -4,6 +4,10 @@ metadata:
   name: cluster
   namespace: openshift-multicluster-engine
 spec:
+  clusterName: patch-me
+  clusterNamespace: openshift-multicluster-engine
+  clusterLabels:
+    cloud: gcp
   applicationManager:
     enabled: true
   certPolicyController:
