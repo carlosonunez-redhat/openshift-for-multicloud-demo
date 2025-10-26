@@ -1,0 +1,13 @@
+apiVersion: hive.openshift.io/v1
+kind: MachinePool
+metadata:
+  name: replace-me-worker
+  namespace: openshift-multicluster-engine
+spec:
+  clusterDeploymentRef:
+    name: replace-me
+  name: worker
+  platform:
+    gcp:
+      type: n1-standard-5
+  replicas: 3

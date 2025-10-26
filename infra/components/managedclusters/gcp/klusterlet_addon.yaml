@@ -1,7 +1,7 @@
 apiVersion: agent.open-cluster-management.io/v1
 kind: KlusterletAddonConfig
 metadata:
-  name: cluster
+  name: replace-me
   namespace: openshift-multicluster-engine
 spec:
   clusterName: patch-me

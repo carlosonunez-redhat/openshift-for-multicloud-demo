@@ -346,7 +346,7 @@ update_clusterdeployment_kustomizations() {
       yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.region')
     cluster_ocp_version=$(sops decrypt "$CONFIG_YAML_PATH" |
       yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.openshift_image_set')
-    for kvp in "baseDomain;$domain" "clusterName;$cluster_name" \
+    for kvp in "baseDomain;$domain" "clusterName;$cluster_name" "metadata/name;$cluster_name" \
       "region;$region" "imageSetRef;$cluster_ocp_version"
     do
       k="$(cut -f1 -d ';' <<< "$kvp")"
