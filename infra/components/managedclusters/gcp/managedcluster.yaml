@@ -1,22 +1,11 @@
-apiVersion: hive.openshift.io/v1
-kind: ClusterDeployment
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
 metadata:
-  name: cluster
-  namespace: openshift-multicluster-engine
+  labels:
+    cloud: auto-detect
+    vendor: auto-detect
+    name: patch-me
+    cluster.open-cluster-management.io/clusterset: clusters
+  name: patch-me
 spec:
-  baseDomain: replace-me
-  clusterName: replace-me
-  platform:
-    gcp:
-      credentialsSecretRef:
-        name: cloud-creds
-      region: replace-me
-  provisioning:
-    imageSetRef:
-      name: replace-me
-    installConfigSecretRef:
-      name: installconfig
-    sshPrivateKeySecretRef:
-      name: replace-me
-  pullSecretRef:
-    name: replace-me
+  hubAcceptsClient: true
