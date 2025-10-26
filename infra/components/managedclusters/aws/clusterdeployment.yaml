@@ -3,6 +3,11 @@ kind: ClusterDeployment
 metadata:
   name: cluster
   namespace: openshift-multicluster-engine
+  labels:
+    cloud: auto-detect
+    region: replace-me
+    vendor: auto-detect
+    cluster.open-cluster-management.io/clusterset: clusters
 spec:
   baseDomain: replace-me
   clusterName: replace-me
