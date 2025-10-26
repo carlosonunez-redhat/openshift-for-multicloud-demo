@@ -19,6 +19,14 @@ spec:
       name: cluster-key
   patches:
     - target:
+        kind: ManagedCluster
+        name: replace-me
+        namespace: openshift-multicluster-engine
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: managed-cluster-aws
+    - target:
         kind: MachinePool
         name: replace-me
         namespace: openshift-multicluster-engine

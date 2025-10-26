@@ -362,14 +362,41 @@ update_clusterdeployment_kustomizations() {
 update_klusterletaddonconfig_kustomizations() {
   local patches domain cluster_name region cluster_ocp_version
   for cloud in "$@"
-  do
+    do
     f="infra/clusters/$cloud/managedclusters.yaml"
     select='.target.kind == "ClusterDeployment" and .target.name == "replace-me"'
     patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
     test -z "$patches" && return 1
     cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
       yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
-    patches=$(jq "(.[] | select(.path | contains(\"clusterName\"))).value = \"$cluster_name\"" <<< "$patches")
+    for kvp in "metadata/name:$cluster_name" "clusterName:$cluster_name"
+    do
+      k="$(cut -f1 -d ';' <<< "$kvp")"
+      v="$(cut -f2 -d ';' <<< "$kvp")"
+      patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
+    done
+    yq -i \
+      "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
+      "$f"
+  done
+}
+
+update_managedcluster_kustomizations() {
+  local patches domain cluster_name region cluster_ocp_version
+  for cloud in "$@"
+  do
+    f="infra/clusters/$cloud/managedclusters.yaml"
+    select='.target.kind == "ManagedCluster" and .target.name == "replace-me"'
+    patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
+    test -z "$patches" && return 1
+    cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
+      yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
+    for kvp in "metadata/name:$cluster_name"
+    do
+      k="$(cut -f1 -d ';' <<< "$kvp")"
+      v="$(cut -f2 -d ';' <<< "$kvp")"
+      patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
+    done
     yq -i \
       "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
       "$f"
@@ -388,6 +415,7 @@ preflight
 prepare_cluster_secrets
 update_clusterdeployment_kustomizations 'aws' 'gcp'
 update_klusterletaddonconfig_kustomizations 'aws' 'gcp'
+update_managedcluster_kustomizations 'aws' 'gcp'
 create_data_volume
 upload_config_into_data_volume
 deploy
