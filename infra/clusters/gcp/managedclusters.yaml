@@ -24,7 +24,7 @@ spec:
       patch: |-
         - op: replace
           path: /metadata/name
-          value: managed-cluster-aws
+          value: managed-cluster-gcp
     - target:
         kind: MachinePool
         name: replace-me-worker
