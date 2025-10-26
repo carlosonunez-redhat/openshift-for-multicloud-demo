@@ -27,7 +27,7 @@ spec:
           value: managed-cluster-aws
     - target:
         kind: MachinePool
-        name: replace-me
+        name: replace-me-worker
         namespace: openshift-multicluster-engine
       patch: |-
         - op: replace
