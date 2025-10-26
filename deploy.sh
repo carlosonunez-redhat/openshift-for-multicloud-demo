@@ -314,6 +314,7 @@ YAML
       region=$(sops decrypt "$CONFIG_YAML_PATH" |
         yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.region')
       _update_if_different "$f" '.baseDomain' "$domain"
+      _update_if_different "$f" '.metadata.name' "managed-cluster-$cloud"
       _update_if_different "$f" ".platform.$cloud.region" "$region"
       _update_if_different "$f" '.pullSecret' 'ocp-pull-secret'
       _update_if_different "$f" '.sshKey' "$(_ssh_public_key)"
