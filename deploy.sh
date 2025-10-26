@@ -335,7 +335,9 @@ update_managedcluster_kustomizations() {
   for cloud in "$@"
   do
     f="infra/clusters/$cloud/managedclusters.yaml"
-    patches=$(yq -r '.spec.patches[] | select(.target.name == "cluster") | .patch' "$f" |
+    patches=$(yq -r '.spec.patches[] |'\
+'select(.target.kind == "ClusterDeployment" and .target.name == "cluster") |'\
+'.patch' "$f" |
       yq -o=j -I=0 .)
     test -z "$patches" && return 1
     domain=$(sops decrypt "$CONFIG_YAML_PATH" |
