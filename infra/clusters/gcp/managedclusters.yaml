@@ -24,26 +24,8 @@ spec:
         namespace: openshift-multicluster-engine
       patch: |-
         - op: replace
-          path: /spec/baseDomain
-          value: djplm.gcp.redhatworkshops.io
-        - op: replace
           path: /spec/clusterName
           value: managed-cluster-gcp
-        - op: replace
-          path: /metadata/labels/region
-          value: us-east1
-        - op: replace
-          path: /spec/platform/gcp/region
-          value: us-east1
-        - op: replace
-          path: /spec/provisioning/imageSetRef/name
-          value: img4.18.26-multi-appsub
-        - op: replace
-          path: /spec/provisioning/sshPrivateKeySecretRef/name
-          value: cluster-ssh-key
-        - op: replace
-          path: /spec/pullSecretRef/name
-          value: ocp-pull-secret
     - target:
         kind: ClusterDeployment
         name: cluster

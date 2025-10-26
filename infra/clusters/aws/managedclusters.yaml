@@ -24,26 +24,8 @@ spec:
         namespace: openshift-multicluster-engine
       patch: |-
         - op: replace
-          path: /spec/baseDomain
-          value: sandbox591.opentlc.com
-        - op: replace
           path: /spec/clusterName
           value: managed-cluster-aws
-        - op: replace
-          path: /metadata/labels/region
-          value: us-east-2
-        - op: replace
-          path: /spec/platform/aws/region
-          value: us-east-2
-        - op: replace
-          path: /spec/provisioning/imageSetRef/name
-          value: img4.18.26-multi-appsub
-        - op: replace
-          path: /spec/provisioning/sshPrivateKeySecretRef/name
-          value: cluster-ssh-key
-        - op: replace
-          path: /spec/pullSecretRef/name
-          value: ocp-pull-secret
     - target:
         kind: ClusterDeployment
         name: cluster
