@@ -1,4 +1,13 @@
 ---
+- set_fact:
+    sa_create_link: "https://console.cloud.google.com/iam-admin/serviceaccounts/create?walkthrough_id=iam--create-service-account&project={{ env.cloud_config.credentials.project }}"
+  when: env.name == "gcp"
+
+- name: "[{{ env.name }}] PREFLIGHT: List nodes to confirm connectivity to cluster"
+  fail:
+    msg: "This GCP credential is not for a service account. Go here to create one: {{ sa_create_link }}"
+  when: env.name == "gcp" and ( env.cloud_config.credentials["service_account.json"] | from_json | json_query("type") ) != "service_account"
+
 - name: "[{{ env.name }}] PREFLIGHT: List nodes to confirm connectivity to cluster"
   kubernetes.core.k8s_info:
     api_version: v1

@@ -20,6 +20,6 @@ FROM docker.io/library/fedora:40
 COPY --from=oc /tmp/oc/oc /usr/bin/oc
 COPY --from=oc /tmp/oc/kubectl /usr/bin/kubectl
 COPY include/pip/requirements.txt /requirements.txt
-RUN dnf -y install python3-pip jq yq ansible
+RUN dnf -y install python3-pip jq yq ansible python3-jmespath
 RUN pip install -r /requirements.txt
 RUN rm requirements.txt

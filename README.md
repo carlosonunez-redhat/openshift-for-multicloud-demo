@@ -11,7 +11,7 @@ or need help!
 
 - Existing OpenShift clusters in AWS and GCP (tested with 4.19)
 - AWS IAM user with an `AdministratorAccess` policy mapping.
-- GCP IAM user with admin-level permissions in a GCP project.
+- GCP IAM service account with `Owner`-level permissions in a GCP project.
 
 ### 🛫 Deploy the Environment
 
