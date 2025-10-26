@@ -45,8 +45,6 @@ spec:
         namespace: openshift-multicluster-engine
       patch: |-
         - op: replace
-          path: 
-        - op: replace
           path: /spec/baseDomain
           value: sandbox591.opentlc.com
         - op: replace
