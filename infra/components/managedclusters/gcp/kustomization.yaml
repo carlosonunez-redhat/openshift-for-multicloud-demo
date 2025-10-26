@@ -4,3 +4,4 @@ resources:
   - managedcluster.yaml
   - clusterdeployment.yaml
   - klusterlet_addon.yaml
+  - machinepool.yaml
