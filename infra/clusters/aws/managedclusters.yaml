@@ -20,7 +20,7 @@ spec:
   patches:
     - target:
         kind: MachinePool
-        name: cluster
+        name: replace-me
         namespace: openshift-multicluster-engine
       patch: |-
         - op: replace
@@ -31,7 +31,7 @@ spec:
           value: managed-cluster-aws
     - target:
         kind: KlusterletAddonConfig
-        name: cluster
+        name: replace-me
         namespace: openshift-multicluster-engine
       patch: |-
         - op: replace
@@ -42,7 +42,7 @@ spec:
           value: managed-cluster-aws
     - target:
         kind: ClusterDeployment
-        name: cluster
+        name: replace-me
         namespace: openshift-multicluster-engine
       patch: |-
         - op: replace

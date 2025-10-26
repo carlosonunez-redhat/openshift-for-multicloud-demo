@@ -335,7 +335,7 @@ update_clusterdeployment_kustomizations() {
   for cloud in "$@"
   do
     f="infra/clusters/$cloud/managedclusters.yaml"
-    select='.target.kind == "ClusterDeployment" and .target.name == "cluster"'
+    select='.target.kind == "ClusterDeployment" and .target.name == "replace-me"'
     patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
     test -z "$patches" && return 1
     domain=$(sops decrypt "$CONFIG_YAML_PATH" |
@@ -364,7 +364,7 @@ update_klusterletaddonconfig_kustomizations() {
   for cloud in "$@"
   do
     f="infra/clusters/$cloud/managedclusters.yaml"
-    select='.target.kind == "ClusterDeployment" and .target.name == "cluster"'
+    select='.target.kind == "ClusterDeployment" and .target.name == "replace-me"'
     patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
     test -z "$patches" && return 1
     cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
