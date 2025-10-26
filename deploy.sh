@@ -330,15 +330,13 @@ YAML
   _update_secrets_kustomization_yaml
 }
 
-update_managedcluster_kustomizations() {
+update_clusterdeployment_kustomizations() {
   local patches domain cluster_name region cluster_ocp_version
   for cloud in "$@"
   do
     f="infra/clusters/$cloud/managedclusters.yaml"
-    patches=$(yq -r '.spec.patches[] |'\
-'select(.target.kind == "ClusterDeployment" and .target.name == "cluster") |'\
-'.patch' "$f" |
-      yq -o=j -I=0 .)
+    select='.target.kind == "ClusterDeployment" and .target.name == "cluster"'
+    patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
     test -z "$patches" && return 1
     domain=$(sops decrypt "$CONFIG_YAML_PATH" |
       yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.domain')
@@ -356,7 +354,24 @@ update_managedcluster_kustomizations() {
       patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
     done
     yq -i \
-      "(.spec.patches[] | select(.target.name == \"cluster\")).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
+      "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
+      "$f"
+  done
+}
+
+update_klusterletaddonconfig_kustomizations() {
+  local patches domain cluster_name region cluster_ocp_version
+  for cloud in "$@"
+  do
+    f="infra/clusters/$cloud/managedclusters.yaml"
+    select='.target.kind == "ClusterDeployment" and .target.name == "cluster"'
+    patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
+    test -z "$patches" && return 1
+    cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
+      yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
+    patches=$(jq "(.[] | select(.path | contains(\"clusterName\"))).value = \"$cluster_name\"" <<< "$patches")
+    yq -i \
+      "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
       "$f"
   done
 }
@@ -371,7 +386,8 @@ set -e
 show_help_if_requested "$@"
 preflight
 prepare_cluster_secrets
-update_managedcluster_kustomizations 'aws' 'gcp'
+update_clusterdeployment_kustomizations 'aws' 'gcp'
+update_klusterletaddonconfig_kustomizations 'aws' 'gcp'
 create_data_volume
 upload_config_into_data_volume
 deploy
