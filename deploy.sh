@@ -63,7 +63,9 @@ upload_config_into_data_volume() {
 }
 
 deploy() {
-  "$COMPOSE_BIN" run --rm deploy |
+  cmd="$COMPOSE_BIN run --rm"
+  test -n "$REBUILD" && cmd="$cmd --build"
+  $cmd deploy |
     grep --color=always -Ev '(^[a-z0-9]{64}$|openshift-for-multicloud)'
 }
 
