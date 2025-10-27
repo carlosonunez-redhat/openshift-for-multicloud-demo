@@ -170,24 +170,22 @@ EOF
   }
 
   _write_cloud_secret_if_pgp_fp_changed() {
-    local creds yaml
-    creds=$(sops decrypt --extract '["environments"]' "$CONFIG_YAML_PATH" |
-      yq -o=j -I=0 -r '.[] | select(.name == "'"$1"'") | .cloud_config.credentials')
-    if test -z "$creds"
-    then
-      >&2 echo "ERROR: Couldn't find cloud config credentials for $1"
-      return 1
-    fi
+    local yaml
     yaml="$(cat <<-EOF
 apiVersion: v1
 kind: Secret
 metadata:
   name: cloud-creds
   namespace: openshift-multicluster-engine
-data: {}
+data: $(sops decrypt --output-type=json --extract '["environments"]' "$CONFIG_YAML_PATH" |
+  jq --arg cloud "$1" -r '.[]|select(.name == $cloud)|.cloud_config.credentials|map_values(@base64)')
 EOF
 )"
-    yaml=$(yq -r ".data = ($creds | map_values(@base64))" <<< "$yaml")
+    if test "$(yq -r .data <<< "$yaml")" == "null"
+    then
+      >&2 echo "ERROR: Couldn't find creds in $CONFIG_YAML_PATH for cloud '$1'"
+      return 1
+    fi
     if test "$#" -gt 1
     then
       for replacement in "${@:2}"
@@ -325,7 +323,7 @@ YAML
   _write_cluster_sops_config_if_pgp_fp_changed
   _write_pull_secrets_for_cluster_components_if_pgp_fp_changed 'operators/multiclusterengine'
   _write_cloud_secret_if_pgp_fp_changed 'aws'
-  _write_cloud_secret_if_pgp_fp_changed 'gcp' 'service_account.json:/osServiceAccount.json:'
+  _write_cloud_secret_if_pgp_fp_changed 'gcp' 'service_account.json/osServiceAccount.json'
   _write_ssh_key_secret
   _write_installconfig_cloud_secrets 'aws' 'gcp'
   _update_secrets_kustomization_yaml
