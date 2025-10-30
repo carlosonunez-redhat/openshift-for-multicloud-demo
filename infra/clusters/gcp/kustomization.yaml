@@ -5,3 +5,4 @@ resources:
   - resources.yaml
   - secrets.yaml
   - managedclusters.yaml
+  - importedclusters.yaml
