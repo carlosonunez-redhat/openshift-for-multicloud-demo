@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - managedcluster.yaml
   - importsecret.yaml
+  - klusterlet_addon.yaml
