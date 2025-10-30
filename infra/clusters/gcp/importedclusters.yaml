@@ -28,7 +28,7 @@ spec:
       patch: |-
         - op: replace
           path: /metadata/namespace
-          value: imported-cluster-gcp
+          value: imported-cluster-aws
     - target:
         kind: ManagedCluster
         name: replace-me
