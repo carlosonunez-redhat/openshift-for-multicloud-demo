@@ -109,28 +109,22 @@ prepare_cluster_secrets() {
     _write_file_if_pgp_fp_differs_from_cluster_pgp_fp "$1" "$2" "$3" 'true'
   }
 
-  _write_pull_secrets_for_cluster_components_if_pgp_fp_changed() {
-    local secret_data
-    secret_data=""
-    for cloud in "$@"
-    do secret_data="$(cat <<-EOF
-$secret_data
+  _write_pull_secret_if_pgp_fp_changed() {
+    _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
+      "$(dirname "$0")/infra/secrets/pull_secret.yaml" \
+      '.sops.pgp[0].fp' \
+      "$(cat <<-EOF
 ---
 apiVersion: v1
 kind: Secret
 metadata:
   name: ocp-pull-secret
-  namespace: managed-cluster-$cloud
+  namespace: replace-me
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: $(_cluster_pull_secret | base64 -w 0)
 EOF
 )"
-    done
-    _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
-      "$(dirname "$0")/infra/secrets/pull_secret.yaml" \
-      '.sops.pgp[0].fp' \
-      "$secret_data"
   }
 
   _write_cluster_sops_config_if_pgp_fp_changed() {
@@ -314,7 +308,7 @@ YAML
   }
 
   _write_cluster_sops_config_if_pgp_fp_changed
-  _write_pull_secrets_for_cluster_components_if_pgp_fp_changed 'aws' 'gcp'
+  _write_pull_secret_if_pgp_fp_changed
   _write_cloud_secret_if_pgp_fp_changed 'aws'
   _write_cloud_secret_if_pgp_fp_changed 'gcp' 'service_account.json/osServiceAccount.json'
   _write_ssh_key_secret
