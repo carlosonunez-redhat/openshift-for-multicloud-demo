@@ -2,10 +2,10 @@ apiVersion: agent.open-cluster-management.io/v1
 kind: KlusterletAddonConfig
 metadata:
   name: replace-me
-  namespace: openshift-multicluster-engine
+  namespace: replace-me
 spec:
   clusterName: patch-me
-  clusterNamespace: openshift-multicluster-engine
+  clusterNamespace: replace-me
   clusterLabels:
     cloud: aws
   applicationManager:

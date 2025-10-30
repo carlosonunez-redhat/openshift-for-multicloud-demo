@@ -2,7 +2,7 @@ apiVersion: hive.openshift.io/v1
 kind: ClusterDeployment
 metadata:
   name: replace-me
-  namespace: openshift-multicluster-engine
+  namespace: replace-me
   labels:
     cloud: auto-detect
     region: replace-me

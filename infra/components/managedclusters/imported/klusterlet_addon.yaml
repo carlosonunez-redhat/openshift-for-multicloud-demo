@@ -2,7 +2,7 @@ apiVersion: agent.open-cluster-management.io/v1
 kind: KlusterletAddonConfig
 metadata:
   name: replace-me-imported
-  namespace: openshift-multicluster-engine
+  namespace: replace-me
 spec:
   applicationManager:
     enabled: true
