@@ -110,34 +110,27 @@ prepare_cluster_secrets() {
   }
 
   _write_pull_secrets_for_cluster_components_if_pgp_fp_changed() {
-    local components_dir component namespace metadata
-    components_dir="$(dirname "$0")/infra/components"
-    for kvp in "$@"
-    do
-      component="$(awk -F ';' '{print $1}' <<< "$kvp")"
-      namespace="$(awk -F ';' '{print $2}' <<< "$kvp")"
-      if test -z "$namespace" && test -f "$components_dir/${component}/namespace.yaml"
-      then namespace=$(yq -r .metadata.name \
-          "$components_dir/${component}/namespace.yaml")
-      else
-        >&2 echo "ERROR: namespace not defined at $components_dir/$component/namespace.yaml"
-        return 1
-      fi
-      metadata="name: ocp-pull-secret,namespace: $namespace"
-      _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
-        "$(dirname "$0")/infra/secrets/$(basename "$component").yaml" \
-        '.sops.pgp[0].fp' \
-        "$(cat <<-EOF
+    local secret_data
+    secret_data=""
+    for cloud in "$@"
+    do secret_data="$(cat <<-EOF
+$secret_data
+---
 apiVersion: v1
 kind: Secret
 metadata:
-$(tr ',' '\n' <<< "$metadata" | sed -E 's/^/  /')
+  name: ocp-pull-secret
+  namespace: managed-cluster-$cloud
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: $(_cluster_pull_secret | base64 -w 0)
 EOF
 )"
     done
+    _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
+      "$(dirname "$0")/infra/secrets/pull_secret.yaml" \
+      '.sops.pgp[0].fp' \
+      "$secret_data"
   }
 
   _write_cluster_sops_config_if_pgp_fp_changed() {
@@ -321,7 +314,7 @@ YAML
   }
 
   _write_cluster_sops_config_if_pgp_fp_changed
-  _write_pull_secrets_for_cluster_components_if_pgp_fp_changed 'operators/multiclusterengine'
+  _write_pull_secrets_for_cluster_components_if_pgp_fp_changed 'aws' 'gcp'
   _write_cloud_secret_if_pgp_fp_changed 'aws'
   _write_cloud_secret_if_pgp_fp_changed 'gcp' 'service_account.json/osServiceAccount.json'
   _write_ssh_key_secret
