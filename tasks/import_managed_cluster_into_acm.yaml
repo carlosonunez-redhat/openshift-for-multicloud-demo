@@ -40,7 +40,7 @@
     kubeconfig: "{{ source_kubeconfig | from_yaml }}"
     kind: Secret
     name: auto-import-secret
-    namespace: openshift-multicluster-engine
+    namespace: imported-clusters-{{ env }}
     label_selectors:
       - kustomize.toolkit.fluxcd.io/name = imported-clusters-{{ env }}
   retries: 60
