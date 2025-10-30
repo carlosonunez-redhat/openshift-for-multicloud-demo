@@ -81,5 +81,5 @@
     namespace: openshift-multicluster-engine
     patch:
       - op: replace
-        path: /stringData/kubeconfig
-        value: managed_cluster_kubeconfig
+        path: /data/kubeconfig
+        value: "{{ managed_cluster_kubeconfig }}"
