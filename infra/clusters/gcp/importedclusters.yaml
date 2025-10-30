@@ -24,7 +24,11 @@ spec:
     - target:
         kind: KlusterletAddonConfig
         name: replace-me-imported
+        namespace: replace-me
       patch: |-
         - op: replace
           path: /metadata/name
+          value: imported-cluster-aws
+        - op: replace
+          path: /metadata/namespace
           value: imported-cluster-aws

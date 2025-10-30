@@ -19,30 +19,46 @@ spec:
       name: cluster-key
   patches:
     - target:
+        kind: Namespace
+        name: replace-me
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: managed-cluster-aws
+    - target:
         kind: ManagedCluster
         name: replace-me
       patch: |-
         - op: replace
           path: /metadata/name
           value: managed-cluster-aws
+        - op: replace
+          path: /metadata/namespace
+          value: managed-cluster-aws
     - target:
         kind: MachinePool
         name: replace-me-worker
-        namespace: openshift-multicluster-engine
+        namespace: replace-me
       patch: |-
         - op: replace
           path: /metadata/name
           value: managed-cluster-aws-worker
+        - op: replace
+          path: /metadata/namespace
+          value: managed-cluster-aws
         - op: replace
           path: /spec/clusterDeploymentRef/name
           value: managed-cluster-aws
     - target:
         kind: KlusterletAddonConfig
         name: replace-me
-        namespace: openshift-multicluster-engine
+        namespace: replace-me
       patch: |-
         - op: replace
           path: /metadata/name
+          value: managed-cluster-aws
+        - op: replace
+          path: /metadata/namespace
           value: managed-cluster-aws
         - op: replace
           path: /spec/clusterName
@@ -50,13 +66,16 @@ spec:
     - target:
         kind: ClusterDeployment
         name: replace-me
-        namespace: openshift-multicluster-engine
+        namespace: replace-me
       patch: |-
         - op: replace
           path: /spec/baseDomain
           value: sandbox591.opentlc.com
         - op: replace
           path: /metadata/name
+          value: managed-cluster-aws
+        - op: replace
+          path: /metadata/namespace
           value: managed-cluster-aws
         - op: replace
           path: /spec/clusterName
