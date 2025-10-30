@@ -4,21 +4,21 @@
   gather_facts: false
   connection: local
   tasks:
-#    - include_tasks: tasks/preflight_checks.yaml
-#      loop: "{{ environments }}"
-#      loop_control:
-#        loop_var: env
-#
-#    - include_tasks: tasks/install_fluxcd.yaml
-#      loop: "{{ environments }}"
-#      loop_control:
-#        loop_var: env
-#
-#    - include_tasks: tasks/create_flux_subscription.yaml
-#      loop: "{{ environments }}"
-#      loop_control:
-#        loop_var: env
-#
+    - include_tasks: tasks/preflight_checks.yaml
+      loop: "{{ environments }}"
+      loop_control:
+        loop_var: env
+
+    - include_tasks: tasks/install_fluxcd.yaml
+      loop: "{{ environments }}"
+      loop_control:
+        loop_var: env
+
+    - include_tasks: tasks/create_flux_subscription.yaml
+      loop: "{{ environments }}"
+      loop_control:
+        loop_var: env
+
     - name: Import GCP cluster into the AWS ACM hub
       include_tasks: tasks/import_managed_cluster_into_acm.yaml
       vars:

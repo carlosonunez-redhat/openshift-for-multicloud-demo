@@ -176,7 +176,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: cloud-creds
-  namespace: openshift-multicluster-engine
+  namespace: replace-me
 data: $(sops decrypt --output-type=json --extract '["environments"]' "$CONFIG_YAML_PATH" |
   jq --arg cloud "$1" -r '.[]|select(.name == $cloud)|.cloud_config.credentials|map_values(@base64)')
 EOF
@@ -216,7 +216,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: cluster-ssh-key
-  namespace: openshift-multicluster-engine
+  namespace: replace-me
 type: Opaque
 data:
   ssh-privatekey: $(_ssh_private_key | base64 -w 0)
@@ -298,7 +298,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: installconfig
-  namespace: openshift-multicluster-engine
+  namespace: replace-me
 data:
   install-config.yaml: $(base64 -w 0 < "$template_f")
 YAML
