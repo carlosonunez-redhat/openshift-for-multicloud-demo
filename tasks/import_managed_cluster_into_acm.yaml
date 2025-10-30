@@ -15,24 +15,10 @@
     msg: "Kubeconfig not found for cluster in '{{ env_to_import }}'"
   when: imported_kubeconfig == ""
 
-- name: "[{{ env }}] Checking that a provisioned cluster exists within ACM hub containing env to import: {{ env_to_import }}"
-  register: deployments
-  kubernetes.core.k8s_info:
-    kubeconfig: "{{ imported_kubeconfig | from_yaml }}"
-    api_version: hive.openshift.io/v1
-    kind: ClusterDeployment
+- include_tasks: ./wait_for_provisioned_deployment.yaml
+  vars:
+    max_attempts: 2700
 
-- set_fact:
-    found_deployments: |-
-      {{
-        deployments.resources |
-        json_query('[?contains(metadata.name, `managed-cluster-' + env_to_import + '`) &&
-                      contains(status.conditions[].reason, `Provisioned`)]')
-      }}
-
-- fail:
-    msg: "Couldn't find a provisioned ClusterDeployment in env to import: {{ env_to_import }}"
-  when: found_deployments == None or found_deployments | length == 0
 
 - name: "[{{ env }}] Waiting 60 secs for Flux to create auto-import-secret in the source ACM hub"
   register: result
