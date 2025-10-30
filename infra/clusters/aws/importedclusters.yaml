@@ -21,3 +21,10 @@ spec:
         - op: replace
           path: /metadata/name
           value: imported-cluster-gcp
+    - target:
+        kind: KlusterletAddonConfig
+        name: replace-me-imported
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: imported-cluster-gcp
