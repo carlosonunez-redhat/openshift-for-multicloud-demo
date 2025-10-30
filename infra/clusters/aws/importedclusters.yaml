@@ -15,6 +15,14 @@ spec:
   force: true
   patches:
     - target:
+        kind: Secret
+        name: auto-import-secret
+        namespace: replace-me
+      patch: |-
+        - op: replace
+          path: /metadata/namespace
+          value: imported-cluster-gcp
+    - target:
         kind: ManagedCluster
         name: replace-me
       patch: |-
