@@ -24,7 +24,7 @@ spec:
           value: managed-cluster-aws
     - target:
         kind: SubmarinerConfig
-        namespace: managed-namespace
+        namespace: namespace
         name: submariner
       patch: |-
         - op: replace
