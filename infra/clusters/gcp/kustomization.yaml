@@ -6,4 +6,3 @@ resources:
   - secrets.yaml
   - managedclusters.yaml
   - importedclusters.yaml
-  - submariner.yaml
