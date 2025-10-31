@@ -16,7 +16,7 @@ spec:
   patches:
     - target:
         kind: ManagedClusterAddOn
-        namespace: managed-namespace
+        namespace: namespace
         name: submariner
       patch: |-
         - op: replace
