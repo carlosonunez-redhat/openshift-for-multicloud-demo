@@ -1,0 +1,32 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: submariner-addon-gcp
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: cluster-config
+    namespace: flux-system
+  path: ./infra/resources/submariner/gcp
+  wait: true
+  prune: true
+  force: true
+  patches:
+    - target:
+        kind: ManagedClusterAddOn
+        namespace: namespace
+        name: submariner
+      patch: |-
+        - op: replace
+          path: /metadata/namespace
+          value: managed-cluster-gcp
+    - target:
+        kind: SubmarinerConfig
+        namespace: namespace
+        name: submariner
+      patch: |-
+        - op: replace
+          path: /metadata/namespace
+          value: managed-cluster-gcp

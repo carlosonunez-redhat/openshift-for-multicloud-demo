@@ -1,0 +1,36 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: submariner-addon-aws
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: cluster-config
+    namespace: flux-system
+  path: ./infra/resources/submariner/aws
+  wait: true
+  prune: true
+  force: true
+  patches:
+    - target:
+        kind: ManagedClusterAddOn
+        namespace: namespace
+        name: submariner
+      patch: |-
+        - op: replace
+          path: /metadata/namespace
+          value: managed-cluster-aws
+    - target:
+        kind: SubmarinerConfig
+        namespace: namespace
+        name: submariner
+      patch: |-
+        - op: replace
+          path: /metadata/namespace
+          value: managed-cluster-aws
+        - op: replace
+          path: /spec/gatewayConfig/aws/instanceType
+          value: m6i.xlarge
+
