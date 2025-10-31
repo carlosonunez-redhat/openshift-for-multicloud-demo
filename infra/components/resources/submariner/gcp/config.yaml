@@ -2,7 +2,7 @@ apiVersion: submarineraddon.open-cluster-management.io/v1alpha1
 kind: SubmarinerConfig
 metadata:
   name: submariner
-  namespace: managed-cluster-gcp
+  namespace: namespace
 spec:
   gatewayConfig:
     gateways: 1

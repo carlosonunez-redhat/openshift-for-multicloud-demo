@@ -2,7 +2,7 @@ apiVersion: submarineraddon.open-cluster-management.io/v1alpha1
 kind: SubmarinerConfig
 metadata:
   name: submariner
-  namespace: imported-cluster-aws
+  namespace: namespace
 spec:
   gatewayConfig:
     gateways: 1
