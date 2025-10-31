@@ -9,7 +9,7 @@ spec:
     kind: GitRepository
     name: cluster-config
     namespace: flux-system
-  path: ./infra/resources/submariner/gcp
+  path: ./infra/components/resources/submariner/gcp
   wait: true
   prune: true
   force: true
