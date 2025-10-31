@@ -15,9 +15,20 @@
     msg: "Kubeconfig not found for cluster in '{{ env_to_import }}'"
   when: imported_kubeconfig == ""
 
-- include_tasks: ./wait_for_provisioned_deployment.yaml
-  vars:
-    max_attempts: 2700
+- name: "[{{ env }}] Waiting 45m for a cluster to become provisioned within ACM hub containing env to import: {{ env_to_import }}"
+  register: deployments
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ imported_kubeconfig | from_yaml }}"
+    api_version: hive.openshift.io/v1
+    kind: ClusterDeployment
+    namespace: "managed-cluster-{{ env_to_import }}"
+    name: "managed-cluster-{{ env_to_import }}"
+    wait: true
+    wait_sleep: 1
+    wait_timeout: 2700
+    wait_condition:
+      type: Provisioned
+      reason: Provisioned
 
 
 - name: "[{{ env }}] Waiting 60 secs for Flux to create auto-import-secret in the source ACM hub"
@@ -26,9 +37,7 @@
     kubeconfig: "{{ source_kubeconfig | from_yaml }}"
     kind: Secret
     name: auto-import-secret
-    namespace: imported-clusters-{{ env }}
-    label_selectors:
-      - kustomize.toolkit.fluxcd.io/name = imported-clusters-{{ env }}
+    namespace: imported-cluster-{{ env_to_import }}
   retries: 60
   delay: 1
   until: result != None and (result.resources | length) > 0
@@ -39,14 +48,14 @@
     kubeconfig: "{{ imported_kubeconfig | from_yaml }}"
     api_version: v1
     kind: Secret
-    namespace: openshift-multicluster-engine
+    namespace: "managed-cluster-{{ env_to_import }}"
     label_selectors:
       - hive.openshift.io/secret-type = kubeconfig
   retries: 2700
   delay: 1
 
 - set_fact:
-    managed_cluster_kubeconfig: |-
+    imported_cluster_kubeconfig: |-
       {{
         (
           result.resources |
@@ -57,15 +66,27 @@
 
 - fail:
     msg: "Couldn't find a kubeconfig for a managed cluster in env to import: {{ env_to_import }}"
-  when: managed_cluster_kubeconfig == ""
+  when: imported_cluster_kubeconfig == ""
 
 - name: "[{{ env }}] Patching auto-import-secret for the imported ManagedCluster"
   kubernetes.core.k8s_json_patch:
     kubeconfig: "{{ source_kubeconfig | from_yaml }}"
     kind: Secret
     name: auto-import-secret
-    namespace: openshift-multicluster-engine
+    namespace: "imported-cluster-{{ env_to_import }}"
     patch:
       - op: replace
         path: /data/kubeconfig
-        value: "{{ managed_cluster_kubeconfig }}"
+        value: "{{ imported_cluster_kubeconfig }}"
+
+- name: "[{{ env }}] Waiting 10m for cluster to get imported"
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ source_kubeconfig | from_yaml }}"
+    kind: ManagedCluster
+    name: "imported-cluster-{{ env_to_import }}"
+    wait: true
+    wait_sleep: 1
+    wait_timeout: 600
+    wait_condition:
+      type: ManagedClusterImported
+      reason: ManagedClusterImportSucceeded
