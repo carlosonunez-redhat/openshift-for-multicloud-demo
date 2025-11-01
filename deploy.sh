@@ -320,7 +320,7 @@ update_clusterdeployment_kustomizations() {
   local patches domain cluster_name region cluster_ocp_version
   for cloud in "$@"
   do
-    f="infra/clusters/$cloud/managedclusters.yaml"
+    f="infra/acm_hubs/primary/managedclusters/$cloud/managedclusters.yaml"
     select='.target.kind == "ClusterDeployment" and .target.name == "replace-me"'
     patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
     test -z "$patches" && return 1
@@ -349,7 +349,7 @@ update_klusterletaddonconfig_kustomizations() {
   local patches domain cluster_name region cluster_ocp_version
   for cloud in "$@"
     do
-    f="infra/clusters/$cloud/managedclusters.yaml"
+    f="infra/acm_hubs/primary/managedclusters/$cloud/managedclusters.yaml"
     select='.target.kind == "ClusterDeployment" and .target.name == "replace-me"'
     patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
     test -z "$patches" && return 1
@@ -371,7 +371,7 @@ update_managedcluster_kustomizations() {
   local patches domain cluster_name region cluster_ocp_version
   for cloud in "$@"
   do
-    f="infra/clusters/$cloud/managedclusters.yaml"
+    f="infra/acm_hubs/primary/managedclusters/$cloud/managedclusters.yaml"
     select='.target.kind == "ManagedCluster" and .target.name == "replace-me"'
     patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
     test -z "$patches" && return 1
