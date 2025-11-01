@@ -29,7 +29,7 @@ spec:
       patch: |-
         - op: replace
           path: /metadata/namespace
-          value: managed-cluster-aws
+          value: managed-cluster-gcp
         - op: replace
           path: /spec/gatewayConfig
           value:
