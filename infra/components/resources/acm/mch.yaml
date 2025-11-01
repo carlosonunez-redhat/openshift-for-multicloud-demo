@@ -3,4 +3,6 @@ kind: MultiClusterHub
 metadata:
   name: multiclusterhub
   namespace: openshift-cluster-management
-spec: {}
+spec:
+  overrides:
+    components: []
