@@ -10,7 +10,7 @@ spec:
     kind: GitRepository
     name: cluster-config
     namespace: flux-system
-  path: ./infra/resources/dataprotection
+  path: ./infra/components/resources/dataprotection
   wait: true
   prune: true
   decryption:
