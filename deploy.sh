@@ -231,10 +231,9 @@ metadata:
     cluster.open-cluster-management.io/type: "$1"
     cluster.open-cluster-management.io/credentials: ""
 data:
-  credentials_file: |-
-$(sops decrypt --extract \
+  credentials_file: $(sops decrypt --extract \
       '["common"]["dataprotection"]["settings"]["aws"]["credentials_file"]' \
-    "$CONFIG_YAML_PATH" | sed -E 's/^/    /g')
+    "$CONFIG_YAML_PATH" | base64 -w 0)
 EOF
 )"
     if test "$(yq -r .data <<< "$yaml")" == "null"
