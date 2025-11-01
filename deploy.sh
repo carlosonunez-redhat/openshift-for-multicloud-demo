@@ -10,9 +10,22 @@ usage() {
 [ENV_VARS] $(basename "$0") [options]
 Deploys the demo.
 
+OPTIONS
+
+  --secrets-only           Only refresh the secrets in the cluster config directory.
+  --kustomizations-only    Refresh secrets and managed cluster kustomizations.
+
 ENVIRONMENT VARIABLES
 
   REBUILD       Rebuilds data volumes.
+
+NOTES
+
+- You can also use this script to refresh the encrypted secrets and/or managed cluster
+  kustomizations that Flux will synchronize with your ACM hubs.
+
+  To do that, add the '--secrets-only' or '--kustomizations-only' flags to the end of your
+  './deploy.sh' command.
 EOF
 }
 
@@ -73,7 +86,7 @@ preflight() {
   _confirm_prereqs_or_fail
 }
 
-prepare_cluster_secrets() {
+generate_cluster_secrets() {
   _cluster_pgp_key_fp() {
     gpg --show-keys --with-colons <(sops decrypt --extract \
       '["common"]["gitops"]["repo"]["secrets"]["cluster_gpg_key"]' \
@@ -395,13 +408,33 @@ show_help_if_requested() {
   exit 0
 }
 
+refresh_secrets_only() {
+  grep -Eq -- '--secrets-only' <<< "$@"
+}
+
+refresh_managed_cluster_kustomizations_only() {
+  grep -Eq -- '--refresh-kustomizations' <<< "$@"
+}
+
 set -e
 show_help_if_requested "$@"
 preflight
-prepare_cluster_secrets
+generate_cluster_secrets
+if refresh_secrets_only "$@"
+then
+  >&2 echo "INFO: Secrets regenerated (if needed); stopping."
+  exit 0
+fi
+
 update_clusterdeployment_kustomizations 'aws' 'gcp'
 update_klusterletaddonconfig_kustomizations 'aws' 'gcp'
 update_managedcluster_kustomizations 'aws' 'gcp'
+if refresh_managed_cluster_kustomizations_only "$@"
+then
+  >&2 echo "INFO: Managed cluster kustomizations regenerated (if needed); stopping."
+  exit 0
+fi
+
 create_data_volume
 upload_config_into_data_volume
 deploy
