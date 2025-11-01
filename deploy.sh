@@ -290,7 +290,7 @@ EOF
     _perform_cloud_specific_updates_gcp() {
       local project
       project=$(sops decrypt "$CONFIG_YAML_PATH" |
-        yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.credentials.project')
+        yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.credentials."service_account.json" | from_json | .project_id')
       _update_if_different "$1" '.platform.gcp.projectID' "$project"
     }
 
