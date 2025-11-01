@@ -33,7 +33,7 @@ environments:
       cloud_config:
         networking:
             region: us-east1
-            domain: djplm.gcp.redhatworkshops.io
+            domain: 2bbm8.gcp.redhatworkshops.io
         # encrypted
         credentials:
             project: ENC[AES256_GCM,data:whr7P2buKKeg5j4y0g==,iv:yxbQL7idSbjS3gfgXjOOWV1VpwaGq9uN7NbQdmiZtTg=,tag:B/cNSaOYTZDUyeGlUdAHTg==,type:str]
@@ -96,8 +96,8 @@ environments:
                     client-certificate-data:**REMOVED**
                     client-key-data:**REMOVED**
 sops:
-    lastmodified: "2025-11-01T18:41:11Z"
-    mac: ENC[AES256_GCM,data:vGLwdga+InDSWrAsAfywFo76vDaGe4R94dmbMXb0eKCToY7c9wOr67WpoYZ24I7hDYV2GB3ndENG82nrX+q8rQrO1SbcTGO8rSqXzjLnzCZ7DbQDLe2qMO+VMW8yARxkqOdxsIFZjjVLBQIIKIoESMo8x4O+2k1n54HOo/yvv9g=,iv:6hD/DZum3sc5QDVOeodsareEuULXxx5GI5nbSxkdCf8=,tag:/LTfH8aw6GzobDC/Nw2B6g==,type:str]
+    lastmodified: "2025-11-01T18:49:09Z"
+    mac: ENC[AES256_GCM,data:E3uMoZ3xf98ieIfVdyHRhXYm9/w0CfgQ5AZ+w/DFkehYU6QRacMWmRedHBE2hvJfLko3DXiWrSQmw3/IEoa9AmhijjWVrQXbJF98nN3WqEayPw8qvxsPFCxm6U9EifqSe0SqPfkuisRFOLbV9l6WKvqywEAUyOZGG5KZjUAlKsE=,iv:nmQPSvVPaMRh9OejI/GHOPqc5EKI0nMjWQWVGf9l18E=,tag:4OJk9VSjTeA2lefVej7dLA==,type:str]
     pgp:
         - created_at: "2025-09-30T22:07:13Z"
           enc: |-
