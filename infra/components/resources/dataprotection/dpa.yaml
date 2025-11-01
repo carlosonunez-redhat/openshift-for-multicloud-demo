@@ -1,0 +1,35 @@
+---
+apiVersion: oadp.openshift.io/v1alpha1
+kind: DataProtectionApplication
+metadata:
+  name: replace-me
+  namespace: open-cluster-management-backup
+spec:
+  backupLocations:
+    - velero:
+        config:
+          region: replace-me
+          s3ForcePathStyle: 'true'
+          bucket: replace-me
+        credential:
+          key: credentials_file
+          name: dataprotection-creds
+        default: true
+        objectStorage:
+          bucket: replace-me
+          prefix: velero
+        provider: aws
+  configuration:
+    restic:
+      enable: true
+    velero:
+      defaultPlugins:
+        - openshift
+        - aws
+        - kubevirt
+  snapshotLocations:
+    - velero:
+        provider: aws
+        config:
+          profile: default
+          region: replace-me
