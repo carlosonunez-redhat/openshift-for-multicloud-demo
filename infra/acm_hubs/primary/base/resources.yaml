@@ -12,3 +12,30 @@ spec:
   path: ./infra/components/resources
   wait: true
   prune: true
+  patches:
+    - target:
+        kind: MultiClusterHub
+        name: multiclusterhub
+        namespace: openshift-cluster-management
+      patch: |-
+        - op: replace
+          path: /spec/overrides/components
+          value:
+            - configOverrides: {}
+              enabled: true
+              name: cluster-backup
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: mch-backup-schedule
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: cluster-config
+    namespace: flux-system
+  path: ./infra/components/resources/acm/backup_schedule
+  wait: true
+  prune: true
