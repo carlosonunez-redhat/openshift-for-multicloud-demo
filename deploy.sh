@@ -4,6 +4,7 @@ CONTAINER_BIN="${CONTAINER_BIN:-podman}"
 COMPOSE_FILE="${COMPOSE_FILE:-compose.yaml}"
 COMPOSE_BIN="${COMPOSE_BIN:-podman-compose}"
 CONFIG_YAML_PATH="$(dirname "$0")/config.yaml"
+REGENERATE_SECRETS=false
 
 usage() {
   cat <<-EOF
@@ -12,6 +13,7 @@ Deploys the demo.
 
 OPTIONS
 
+  --regenerate-secrets     Recreate existing secrets entirely.
   --secrets-only           Only refresh the secrets in the cluster config directory.
   --kustomizations-only    Refresh secrets and managed cluster kustomizations.
 
@@ -105,15 +107,22 @@ generate_cluster_secrets() {
       test -f "$fp" && test "$(yq -r "$yq_query" "$fp")" == "$(_cluster_pgp_key_fp)"
     }
 
+    _delete_if_regenerating() {
+      test "${REGENERATE_SECRETS,,}" == 'true' || return 0
+      rm "$file"
+    }
+
     local file yq_query encrypt thing
     file="$1"
     yq_query="$2"
     text="$3"
     encrypt="${4:-false}"
 
+    _delete_if_regenerating "$file"
+
     _file_pgp_fp_matches_cluster_pgp_key_fp "$file" "$yq_query" && return 0
     test "${encrypt,,}" == 'false' && thing='file' || thing=secret
-    >&2 echo "INFO: Writing cluster $thing: '$file' (encrypt: $encrypt)"
+    >&2 echo "INFO: Writing cluster $thing: '$file' (encrypt: $encrypt, regenerate: $REGENERATE_SECRETS)"
     test "${encrypt,,}" == false && echo "$text" > "$file" && return 0
     echo "$text" | sops encrypt --filename-override "$file" --output "$file"
   }
@@ -416,13 +425,20 @@ refresh_managed_cluster_kustomizations_only() {
   grep -Eq -- '--refresh-kustomizations' <<< "$@"
 }
 
+secrets_regeneration_requested() {
+  grep -Eq -- '--regenerate-secrets' <<< "$@"
+}
+
 set -e
 show_help_if_requested "$@"
-preflight
+preflight || exit 1
+secrets_regeneration_requested "$@" && REGENERATE_SECRETS=true
 generate_cluster_secrets
 if refresh_secrets_only "$@"
 then
-  >&2 echo "INFO: Secrets regenerated (if needed); stopping."
+  op=updated
+  test "${REGENERATE_SECRETS,,}" == 'true' && op=created
+  >&2 echo "INFO: Secrets $op (if needed); stopping."
   exit 0
 fi
 
