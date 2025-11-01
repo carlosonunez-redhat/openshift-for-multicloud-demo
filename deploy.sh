@@ -109,6 +109,7 @@ generate_cluster_secrets() {
 
     _delete_if_regenerating() {
       test "${REGENERATE_SECRETS,,}" == 'true' || return 0
+      test -f "$file" || return 0
       rm "$file"
     }
 
@@ -186,6 +187,8 @@ kind: Secret
 metadata:
   name: cloud-creds
   namespace: replace-me
+  cluster.open-cluster-management.io/type: "$1"
+  cluster.open-cluster-management.io/credentials: ""
 data: $(sops decrypt --output-type=json --extract '["environments"]' "$CONFIG_YAML_PATH" |
   jq --arg cloud "$1" -r '.[]|select(.name == $cloud)|.cloud_config.credentials|map_values(@base64)')
 EOF
