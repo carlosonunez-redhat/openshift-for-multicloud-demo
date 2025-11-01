@@ -1,0 +1,40 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dataprotection-app
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: cluster-config
+    namespace: flux-system
+  path: ./infra/resources/dataprotection
+  wait: true
+  prune: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: cluster-key
+  patches:
+    - target:
+        kind: DataProtectionApplication
+        name: replace-me
+        namespace: open-cluster-management-backup
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: dpa-aws
+        - op: replace
+          path: /spec/backupLocations/0/config/region
+          value: us-east-2
+        - op: replace
+          path: /spec/backupLocations/0/config/bucket
+          value: 15kyfmfrrgm3-acm-hub-backups
+        - op: replace
+          path: /spec/backupLocations/0/objectStorage/bucket
+          value: 15kyfmfrrgm3-acm-hub-backups
+        - op: replace
+          path: /spec/snapshotLocations/0/config/region
+          value: us-east-2

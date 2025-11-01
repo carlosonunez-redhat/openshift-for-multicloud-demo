@@ -12,3 +12,15 @@ spec:
   path: ./infra/components/resources
   wait: true
   prune: true
+  patches:
+    - target:
+        kind: MultiClusterHub
+        name: multiclusterhub
+        namespace: openshift-cluster-management
+      patch: |-
+        - op: replace
+          path: /spec/overrides/components
+          value:
+            - configOverrides: {}
+              enabled: true
+              name: cluster-backup
