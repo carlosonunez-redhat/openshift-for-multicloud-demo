@@ -1,7 +1,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: managed-clusters
+  name: managed-cluster-gcp
   namespace: flux-system
 spec:
   interval: 1m0s
@@ -9,7 +9,7 @@ spec:
     kind: GitRepository
     name: cluster-config
     namespace: flux-system
-  path: ./infra/components/managedclusters/aws
+  path: ./infra/components/managedclusters/gcp
   wait: true
   prune: true
   force: true
@@ -24,17 +24,14 @@ spec:
       patch: |-
         - op: replace
           path: /metadata/name
-          value: managed-cluster-aws
+          value: managed-cluster-gcp
     - target:
         kind: ManagedCluster
         name: replace-me
       patch: |-
         - op: replace
           path: /metadata/name
-          value: managed-cluster-aws
-        - op: replace
-          path: /metadata/namespace
-          value: managed-cluster-aws
+          value: managed-cluster-gcp
     - target:
         kind: MachinePool
         name: replace-me-worker
@@ -42,13 +39,13 @@ spec:
       patch: |-
         - op: replace
           path: /metadata/name
-          value: managed-cluster-aws-worker
+          value: managed-cluster-gcp-worker
         - op: replace
           path: /metadata/namespace
-          value: managed-cluster-aws
+          value: managed-cluster-gcp
         - op: replace
           path: /spec/clusterDeploymentRef/name
-          value: managed-cluster-aws
+          value: managed-cluster-gcp
     - target:
         kind: KlusterletAddonConfig
         name: replace-me
@@ -56,13 +53,13 @@ spec:
       patch: |-
         - op: replace
           path: /metadata/name
-          value: managed-cluster-aws
+          value: managed-cluster-gcp
         - op: replace
           path: /metadata/namespace
-          value: managed-cluster-aws
+          value: managed-cluster-gcp
         - op: replace
           path: /spec/clusterName
-          value: managed-cluster-aws
+          value: managed-cluster-gcp
     - target:
         kind: ClusterDeployment
         name: replace-me
@@ -70,22 +67,22 @@ spec:
       patch: |-
         - op: replace
           path: /spec/baseDomain
-          value: sandbox591.opentlc.com
+          value: djplm.gcp.redhatworkshops.io
         - op: replace
           path: /metadata/name
-          value: managed-cluster-aws
+          value: managed-cluster-gcp
         - op: replace
           path: /metadata/namespace
-          value: managed-cluster-aws
+          value: managed-cluster-gcp
         - op: replace
           path: /spec/clusterName
-          value: managed-cluster-aws
+          value: managed-cluster-gcp
         - op: replace
           path: /metadata/labels/region
-          value: us-east-2
+          value: us-east1
         - op: replace
-          path: /spec/platform/aws/region
-          value: us-east-2
+          path: /spec/platform/gcp/region
+          value: us-east1
         - op: replace
           path: /spec/provisioning/imageSetRef/name
           value: img4.18.26-multi-appsub

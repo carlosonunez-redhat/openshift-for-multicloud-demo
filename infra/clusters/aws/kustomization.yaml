@@ -4,6 +4,8 @@ resources:
   - operators.yaml
   - resources.yaml
   - secrets.yaml
-  - managedclusters.yaml
-  - importedclusters.yaml
-  - submariner.yaml
+  - managedcluster_aws.yaml
+  - managedcluster_gcp.yaml
+  - submariner_aws.yaml
+  - submariner_gcp.yaml
+  - submariner_broker.yaml
