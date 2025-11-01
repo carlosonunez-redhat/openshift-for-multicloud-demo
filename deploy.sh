@@ -219,6 +219,49 @@ EOF
       "$yaml"
   }
 
+  _write_dataprotection_secret_if_pgp_fp_changed() {
+    local yaml
+    yaml="$(cat <<-EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dataprotection-creds
+  namespace: open-cluster-management-backup
+  labels:
+    cluster.open-cluster-management.io/type: "$1"
+    cluster.open-cluster-management.io/credentials: ""
+data:
+  credentials_file: |-
+$(sops decrypt --extract \
+      '["common"]["dataprotection"]["settings"]["aws"]["credentials_file"]' \
+    "$CONFIG_YAML_PATH" | sed -E 's/^/    /g')
+EOF
+)"
+    if test "$(yq -r .data <<< "$yaml")" == "null"
+    then
+      >&2 echo "ERROR: Couldn't find creds in $CONFIG_YAML_PATH for cloud '$1'"
+      return 1
+    fi
+    if test "$#" -gt 1
+    then
+      for replacement in "${@:2}"
+      do yaml=$(sed "s/$replacement/g" <<< "$yaml")
+      done
+    fi
+    secret_dir="$(dirname "$0")/infra/secrets/dataprotection/$1"
+    test -d "$secret_dir" || mkdir -p "$secret_dir"
+    cat >"$secret_dir/kustomization.yaml" <<-EOF
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- credential.yaml
+EOF
+    _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
+      "$secret_dir/credential.yaml" \
+      '.sops.pgp[0].fp' \
+      "$yaml"
+  }
+
   _write_ssh_key_secret() {
     secret_dir="$(dirname "$0")/infra/secrets"
     _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
@@ -337,6 +380,7 @@ YAML
   _write_pull_secret_if_pgp_fp_changed
   _write_cloud_secret_if_pgp_fp_changed 'aws'
   _write_cloud_secret_if_pgp_fp_changed 'gcp' 'service_account.json/osServiceAccount.json'
+  _write_dataprotection_secret_if_pgp_fp_changed 'aws'
   _write_ssh_key_secret
   _write_installconfig_cloud_secrets 'aws' 'gcp'
   _update_secrets_kustomization_yaml
