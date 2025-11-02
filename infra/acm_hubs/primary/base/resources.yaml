@@ -43,7 +43,7 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: gitops-cluster
+  name: gitops-cluster-apps
   namespace: flux-system
 spec:
   interval: 1m0s
@@ -54,3 +54,22 @@ spec:
   path: ./infra/components/resources/argocd_cluster
   wait: true
   prune: true
+  patches:
+    - target:
+        kind: GitOpsCluster
+        name: replace-me
+        namespace: replace-me
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: gitops-cluster
+        - op: replace
+          path: /metadata/namespace
+          value: apps
+    - target:
+        kind: Namespace
+        name: replace-me
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: apps
