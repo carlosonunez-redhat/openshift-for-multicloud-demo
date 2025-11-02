@@ -2,7 +2,7 @@ apiVersion: apps.open-cluster-management.io/v1beta1
 kind: GitOpsCluster
 metadata:
   name: replace-me
-  namespace: dev
+  namespace: replace-me
 spec:
   argoServer:
     cluster: local-cluster
