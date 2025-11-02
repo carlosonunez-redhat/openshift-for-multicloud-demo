@@ -4,7 +4,7 @@ metadata:
   name: gitops-og
   namespace: openshift-gitops-operator
 spec:
-  updateStrategy: default
+  upgradeStrategy: default
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
