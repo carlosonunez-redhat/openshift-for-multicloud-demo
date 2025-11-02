@@ -14,6 +14,6 @@ metadata:
 spec:
   sourceNamespace: openshift-marketplace
   source: redhat-operators
-  channel: 1.18.1
+  channel: gitops-1.18
   installPlanApproval: Automatic
   name: openshift-gitops-operator
