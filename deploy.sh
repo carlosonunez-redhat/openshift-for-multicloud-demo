@@ -63,7 +63,7 @@ _confirm_prereqs_or_fail() {
 }
 
 create_data_volume() {
-  test -n "$REBUILD" && _container volume rm "$DATA_VOLUME_NAME" >/dev/null
+  test -n "$REBUILD" && _container volume rm "$DATA_VOLUME_NAME" -f >/dev/null
   _container volume ls | grep -q "$DATA_VOLUME_NAME" && return 0
   _container volume create "$DATA_VOLUME_NAME" >/dev/null
 }
