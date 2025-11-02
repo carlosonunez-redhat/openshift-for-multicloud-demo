@@ -20,17 +20,3 @@
       loop: "{{ environments }}"
       loop_control:
         loop_var: env
-
-    - name: Import GCP cluster into the AWS ACM hub
-      include_tasks: tasks/import_managed_cluster_into_acm.yaml
-      vars:
-        environments: "{{ environments }}"
-        env: aws
-        env_to_import: gcp
-
-    - name: Import AWS cluster into GCP ACM hub
-      include_tasks: tasks/import_managed_cluster_into_acm.yaml
-      vars:
-        environments: "{{ environments }}"
-        env: gcp
-        env_to_import: aws
