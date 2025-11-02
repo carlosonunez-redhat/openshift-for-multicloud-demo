@@ -7,6 +7,7 @@ common:
     dataprotection:
         settings:
             aws:
+                region: us-east-2
                 bucket:
                     key: 15kyfmfrrgm3-acm-hub-backups
                 # encrypted
@@ -103,8 +104,8 @@ environments:
                     client-certificate-data:**REMOVED**
                     client-key-data:**REMOVED**
 sops:
-    lastmodified: "2025-11-01T23:30:24Z"
-    mac: ENC[AES256_GCM,data:e6BnvYHl/bub62u9pKGT3OSONWiROU3w5KUI2vJG01Q9l9D7OWoMcCFXBKItvdcwhK4S0mkNnLKBZzWJT+9fKOOFxTX0XY7KJqhen6rVoW+YPOdT8OCeybMeS37hmbXJeDf2D0o6B/eZ7+OmJ42/H4m5jGnOV7Th1mplrFeJJpY=,iv:oUY3vhxyNAY0MuW0b9+jHJPTQ+lHB9rYzO8SnliBwv4=,tag:/0mwIqni8ADby0HXbrCfgw==,type:str]
+    lastmodified: "2025-11-01T23:47:34Z"
+    mac: ENC[AES256_GCM,data:+xK4Uq0JaIp8LaUtmzKv4oWn/ba624aDHZ/YFGw3yeakQ3biWl7vWtlIHAhGCy/Z6gGq4UDNwQreXeGlfTvbz1fOw1edL8Zfhq7+VJxj5Lb3aVaAD4ULqyHe+FPXV0Yo1+J9l5rgjeq5xursuT/ML89gPyqehK8TKUDiwoFutok=,iv:uQ3YR+ZH0sHO1UqaScpqkX1mIZN17Bf6360vnAWf/Ts=,tag:afKfUTKSjEDx0f18QlORkg==,type:str]
     pgp:
         - created_at: "2025-09-30T22:07:13Z"
           enc: |-
