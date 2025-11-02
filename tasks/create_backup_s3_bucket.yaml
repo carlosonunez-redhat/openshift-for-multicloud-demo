@@ -1,0 +1,8 @@
+---
+- name: "[common] Create S3 bucket for ACM backups"
+  amazon.aws.s3_bucket:
+    access_key: "{{ settings.aws.credentials_file | split('\n') | select('contains', 'key_id') | first | split('=') | last | trim}}"
+    secret_key: "{{ settings.aws.credentials_file | split('\n') | select('contains', 'secret') | first | split('=') | last | trim }}"
+    region: "{{ settings.aws.region }}"
+    name: "{{ settings.aws.bucket.key }}"
+    state: present
