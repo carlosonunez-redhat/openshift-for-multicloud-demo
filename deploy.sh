@@ -225,13 +225,13 @@ EOF
 apiVersion: v1
 kind: Secret
 metadata:
-  name: dataprotection-creds
+  name: cloud-credentials
   namespace: open-cluster-management-backup
   labels:
     cluster.open-cluster-management.io/type: "$1"
     cluster.open-cluster-management.io/credentials: ""
 data:
-  credentials_file: $(sops decrypt --extract \
+  cloud: $(sops decrypt --extract \
       '["common"]["dataprotection"]["settings"]["aws"]["credentials_file"]' \
     "$CONFIG_YAML_PATH" | base64 -w 0)
 EOF

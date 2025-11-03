@@ -12,8 +12,8 @@ spec:
           s3ForcePathStyle: 'true'
           bucket: replace-me
         credential:
-          key: credentials_file
-          name: dataprotection-creds
+          key: cloud
+          name: cloud-credentials
         default: true
         objectStorage:
           bucket: replace-me
