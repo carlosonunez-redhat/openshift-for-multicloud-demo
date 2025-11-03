@@ -11,7 +11,7 @@ common:
                 bucket:
                     key: 15kyfmfrrgm3-acm-hub-backups
                 # encrypted
-                credentials_file: ENC[AES256_GCM,data:3Cu8weSZszSGG0rDPu0rlZMaCF56w0TBCg5eIzp/QOU7AQMvIwnNYJvTuieCSY3ORhlMIze4mfatG6ImydTc9Uv4hQoShXClHcgok2n1o4CRBfh5GK6qU9C2JVV+mGv5JZWcINxzaQs5CYZRwl3lTSDvuAKUkF4=,iv:asWSJJ+a5nuap9wzo2v3vP2FjpnK1errLavpk4SBz5U=,tag:iZ18iRjB+XRXrGCi+E1rIQ==,type:str]
+                credentials_file: ENC[AES256_GCM,data:N55R+zke4fHWhUyRPc03ZxfliMnch4yfXDS992h3gGVvj6eYYtYHvEhZu81VlnXNuh6B4h6l63cQsCXNBfPf49bgvZAN624/T4d5JyX5tRZdsoFeO+soqSqghuHhhBEFbY/i8TWoTMcuHejsFR9y/hl0MA==,iv:8Mruwiy84AMMBxmWpzLSEugO/2evOAL0+H7i42p1X6k=,tag:ZRgc2M5Xb7CfXGvGtrauYQ==,type:str]
     gitops:
         repo:
             settings:
@@ -104,8 +104,8 @@ environments:
                     client-certificate-data:**REMOVED**
                     client-key-data:**REMOVED**
 sops:
-    lastmodified: "2025-11-01T23:47:34Z"
-    mac: ENC[AES256_GCM,data:+xK4Uq0JaIp8LaUtmzKv4oWn/ba624aDHZ/YFGw3yeakQ3biWl7vWtlIHAhGCy/Z6gGq4UDNwQreXeGlfTvbz1fOw1edL8Zfhq7+VJxj5Lb3aVaAD4ULqyHe+FPXV0Yo1+J9l5rgjeq5xursuT/ML89gPyqehK8TKUDiwoFutok=,iv:uQ3YR+ZH0sHO1UqaScpqkX1mIZN17Bf6360vnAWf/Ts=,tag:afKfUTKSjEDx0f18QlORkg==,type:str]
+    lastmodified: "2025-11-03T23:54:26Z"
+    mac: ENC[AES256_GCM,data:7DAWZe6l8OKmytRbhZ0RXsOvMfG3ST4dJvULnm7T1SLYdDi8rSxAtDCnv+xce1GnFbtKoY5EaNrY+FYDBt/5pWlcXzd/6Z+mkCstLkMyusXcajdvToCv4WOW8Z2ozJMCWZ7rlX+w0Gh3iofnZdH/83utTm5wbqDLv13R2/t0t48=,iv:9aJCrtOKUcbdc15z5ErpZT1b9psp/kjcCFtUQXgnud4=,tag:YA5f2K5QWKYVKo2f7HP5rw==,type:str]
     pgp:
         - created_at: "2025-09-30T22:07:13Z"
           enc: |-
