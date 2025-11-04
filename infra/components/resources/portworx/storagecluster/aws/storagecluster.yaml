@@ -1,0 +1,34 @@
+kind: StorageCluster
+apiVersion: core.libopenstorage.org/v1
+metadata:
+  name: replace-me
+  namespace: portworx
+  annotations:
+    portworx.io/is-openshift: "true"
+spec:
+  image: portworx/oci-monitor:3.4.1
+  imagePullPolicy: Always
+  kvdb:
+    internal: true
+  cloudStorage:
+    deviceSpecs:
+    - type=gp3,size=50
+    - type=gp3,size=50
+    - type=gp3,size=50
+    - type=gp3,size=50
+  secretsProvider: k8s
+  startPort: 17001
+  stork:
+    enabled: true
+    args:
+      webhook-controller: "true"
+  runtimeOptions:
+    default-io-profile: "6"
+  csi:
+    enabled: true
+  monitoring:
+    telemetry:
+      enabled: true
+    prometheus:
+      exportMetrics: true
+  env: {}
