@@ -43,6 +43,9 @@ spec:
               operator: Equal
             - key: cluster.open-cluster-management.io/unavailable
               operator: Equal
+        - op: replace
+          path: /spec/generators/0/clusterDecisionResource/labelSelector/matchLabels/cluster.open-cluster-management.io~1placement
+          value: gcp-gitops-placement
 
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -121,3 +124,6 @@ spec:
               path: ./apps
               directory:
                 recurse: true
+        - op: replace
+          path: /spec/generators/0/clusterDecisionResource/labelSelector/matchLabels/cluster.open-cluster-management.io~1placement
+          value: gcp-gitops-placement
