@@ -376,14 +376,14 @@ YAML
   }
 
   _write_acm_gitops_secret() {
-    url=$(sops decrypt "$CONFIG_YAML_PATH" | yq -r '.common.gitops.repo.settings.location.url')
-    if test -z "$url"
+    url=$(sops decrypt "$CONFIG_YAML_PATH" | yq -r '.common.gitops.repo.location.url')
+    if test -z "$url" || test "$url" == null
     then
       >&2 echo "ERROR: GitOps URL is not defined."
       return 1
     fi
-    ssh_privkey=$(sops decrypt "$CONFIG_YAML_PATH" | yq -r '.common.gitops.repo.settings.credentials.ssh.private')
-    if test -z "$ssh_privkey"
+    ssh_privkey=$(sops decrypt "$CONFIG_YAML_PATH" | yq -r '.common.gitops.repo.credentials.ssh.private')
+    if test -z "$ssh_privkey" || test "$url" == null
     then
       >&2 echo "ERROR: SSH private key for GitOps repo [$url] is not defined."
       return 1
@@ -404,7 +404,8 @@ type: Opaque
 stringData:
   type: git
   url: $url
-  sshPrivateKey: $ssh_privkey
+  sshPrivateKey: |-
+$(sed -E 's/^/    /' <<< "$ssh_privkey")
 EOF
 )"
 
