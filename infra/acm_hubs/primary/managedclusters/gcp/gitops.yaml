@@ -64,14 +64,11 @@ spec:
     - target:
         kind: GitOpsCluster
         name: replace-me
-        namespace: replace-me
+        namespace: openshift-gitops
       patch: |-
         - op: replace
           path: /metadata/name
           value: gitops-cluster-aws
-        - op: replace
-          path: /metadata/namespace
-          value: openshift-gitops
         - op: replace
           path: /spec/placementRef/name
           value: gcp-gitops-placement
