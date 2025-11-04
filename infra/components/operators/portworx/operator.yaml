@@ -1,0 +1,19 @@
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: portworx-og
+  namespace: portworx-operator
+spec:
+  upgradeStrategy: Default
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: portworx-operator-sub
+  namespace: portworx-operator
+spec:
+  sourceNamespace: openshift-marketplace
+  source: certified-operators
+  channel: stable
+  installPlanApproval: Automatic
+  name: portworx-certified
