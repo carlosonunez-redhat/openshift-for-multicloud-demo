@@ -96,10 +96,13 @@ spec:
         - op: replace
           path: /metadata/name
           value: aws-clusters
-        - op: add
+        - op: replace
           path: /spec/clusterSelector/labelSelector/matchExpressions
           value:
-            - cloud: Amazon
+            - key: cloud
+              operator: In
+              values:
+                - Amazon
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
@@ -123,7 +126,10 @@ spec:
         - op: replace
           path: /metadata/name
           value: aws-clusters
-        - op: add
+        - op: replace
           path: /spec/clusterSelector/labelSelector/matchExpressions
           value:
-            - cloud: Google
+            - key: cloud
+              operator: In
+              values:
+                - Google
