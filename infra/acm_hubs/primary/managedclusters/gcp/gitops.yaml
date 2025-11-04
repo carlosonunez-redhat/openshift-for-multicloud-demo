@@ -20,12 +20,18 @@ spec:
       patch: |-
         - op: replace
           path: /metadata/name
-          value: gcp-infra-mcsb
+          value: global
+        - op: replace
+          path: /spec/clusterSet
+          value: global
     - target:
         kind: Placement
         name: replace-me
         namespace: openshift-gitops
       patch: |-
+        - op: replace
+          path: /spec/clusterSets
+          value: ["global"]
         - op: replace
           path: /spec/predicates/0/requiredClusterSelector/labelSelector/matchExpressions
           value:
@@ -73,17 +79,13 @@ spec:
   force: true
   patches:
     - target:
-        kind: ManagedClusterSetBinding
-        name: replace-me
-      patch: |-
-        - op: replace
-          path: /metadata/name
-          value: gcp-apps-mcsb
-    - target:
         kind: Placement
         name: replace-me
         namespace: openshift-gitops
       patch: |-
+        - op: replace
+          path: /spec/clusterSets
+          value: ["global"]
         - op: replace
           path: /spec/predicates/0/requiredClusterSelector/labelSelector/matchExpressions
           value:

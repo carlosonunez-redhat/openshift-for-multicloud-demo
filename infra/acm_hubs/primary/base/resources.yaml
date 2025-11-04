@@ -73,3 +73,30 @@ spec:
         - op: replace
           path: /metadata/name
           value: gitops-clusters
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: managed-cluster-gitops-mcsb
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: cluster-config
+    namespace: flux-system
+  path: ./infra/components/resources/acm/managedclustersetbinding
+  wait: true
+  prune: true
+  force: true
+  patches:
+    - target:
+        kind: ManagedClusterSetBinding
+        name: replace-me
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: global
+        - op: replace
+          path: /spec/clusterSet
+          value: global

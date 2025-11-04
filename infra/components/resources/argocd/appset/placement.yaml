@@ -5,7 +5,7 @@ metadata:
   namespace: openshift-gitops
 spec:
   clusterSets:
-    - global
+    - clusterset-name
   predicates:
     - requiredClusterSelector:
         labelSelector:
