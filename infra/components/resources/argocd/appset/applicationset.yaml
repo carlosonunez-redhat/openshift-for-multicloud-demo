@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: replace-me
+  namespace: openshift-gitops
+spec:
+  generators:
+  - clusterDecisionResource:
+      configMapRef: acm-placement
+      requeueAfterSeconds: 30
+  template:
+    metadata:
+      annotations:
+        apps.open-cluster-management.io/ocm-managed-cluster: managed-cluster-name
+        apps.open-cluster-management.io/ocm-managed-cluster-app-namespace: openshift-gitops
+        argocd.argoproj.io/skip-reconcile: "true" 
+      name: application-name
+    spec:
+      destination:
+        namespace: application-namespace
+        server: https://kubernetes.default.svc
+      project: default
+      sources: replace-me
+      syncPolicy:
+        automated: {}
+        syncOptions:
+        - CreateNamespace=true

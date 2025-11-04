@@ -51,7 +51,7 @@ spec:
     kind: GitRepository
     name: cluster-config
     namespace: flux-system
-  path: ./infra/components/resources/argocd_cluster
+  path: ./infra/components/resources/argocd/cluster
   wait: true
   prune: true
   patches:
