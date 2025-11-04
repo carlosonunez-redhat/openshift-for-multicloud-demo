@@ -125,7 +125,7 @@ spec:
       patch: |-
         - op: replace
           path: /metadata/name
-          value: aws-clusters
+          value: gcp-clusters
         - op: replace
           path: /spec/clusterSelector/labelSelector/matchExpressions
           value:
