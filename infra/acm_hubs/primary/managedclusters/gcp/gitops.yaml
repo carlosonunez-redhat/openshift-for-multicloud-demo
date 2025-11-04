@@ -19,6 +19,9 @@ spec:
         name: replace-me
       patch: |-
         - op: replace
+          path: /spec/generators/0/clusterDecisionResource/name
+          value: gcp-clusters
+        - op: replace
           path: /metadata/name
           value: managed-cluster-gcp-infra
         - op: replace
@@ -57,6 +60,9 @@ spec:
         kind: ApplicationSet
         name: replace-me
       patch: |-
+        - op: replace
+          path: /spec/generators/0/clusterDecisionResource/name
+          value: gcp-clusters
         - op: replace
           path: /metadata/name
           value: managed-cluster-gcp-apps
