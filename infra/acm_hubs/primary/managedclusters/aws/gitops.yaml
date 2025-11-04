@@ -32,6 +32,10 @@ spec:
               operator: In
               values:
                 - Amazon
+            - key: name
+              operator: NotIn
+              values:
+                - local-cluster
 
 ---
 

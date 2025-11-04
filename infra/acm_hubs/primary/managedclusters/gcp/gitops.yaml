@@ -32,6 +32,10 @@ spec:
               operator: In
               values:
                 - Google
+            - key: name
+              operator: NotIn
+              values:
+                - local-cluster
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
