@@ -115,7 +115,7 @@ spec:
           value:
             - repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
               targetRevision: main
-              path: ./infra/cluster/aws
+              path: ./infra/clusters/aws
               directory:
                 recurse: true
         - op: replace
