@@ -17,7 +17,7 @@ spec:
       name: application-name
     spec:
       destination:
-        namespace: application-namespace
+        namespace: argo-resources
         server: https://kubernetes.default.svc
       project: default
       sources: replace-me

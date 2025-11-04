@@ -48,8 +48,9 @@ spec:
                 argocd.argoproj.io/skip-reconcile: "true" 
               name: managed-cluster-gcp-apps
             spec:
+              sources: {}
               destination:
-                namespace: application-namespace
+                namespace: argo-resources
                 server: https://kubernetes.default.svc
               project: default
               syncPolicy:
@@ -108,8 +109,9 @@ spec:
                 argocd.argoproj.io/skip-reconcile: "true" 
               name: managed-cluster-gcp-apps
             spec:
+              sources: {}
               destination:
-                namespace: application-namespace
+                namespace: argo-resources
                 server: https://kubernetes.default.svc
               project: default
               syncPolicy:
