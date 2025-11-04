@@ -36,6 +36,14 @@ spec:
               operator: NotIn
               values:
                 - local-cluster
+        - op: replace
+          path: /spec/tolerations
+          value:
+            - key: cluster.open-cluster-management.io/unreachable
+              operator: Equal
+            - key: cluster.open-cluster-management.io/unavailable
+              operator: Equal
+
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization

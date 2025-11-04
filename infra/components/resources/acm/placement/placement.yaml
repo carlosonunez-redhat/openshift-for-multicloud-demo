@@ -6,6 +6,7 @@ metadata:
 spec:
   clusterSets:
     - clusterset-name
+  tolerations: [] # patch-me-optional
   predicates:
     - requiredClusterSelector:
         labelSelector:
