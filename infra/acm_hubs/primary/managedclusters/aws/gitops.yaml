@@ -113,7 +113,7 @@ spec:
         - op: replace
           path: /spec/template/spec/sources
           value:
-            - repoURL: https://github.com/carlosonunez-redhat/openshift-for-multicloud-demo
+            - repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
               targetRevision: main
               path: ./infra/cluster/aws
               directory:
@@ -158,7 +158,7 @@ spec:
         - op: replace
           path: /spec/template/spec/sources
           value:
-            - repoURL: https://github.com/carlosonunez-redhat/openshift-for-multicloud-demo
+            - repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
               targetRevision: main
               path: ./apps
               directory:
