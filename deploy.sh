@@ -403,8 +403,8 @@ metadata:
 type: Opaque
 stringData:
   type: git
-  url: $(base64 -w 0 <<< "$url")
-  sshPrivateKey: $(base64 -w 0 <<< "$ssh_privkey")
+  url: $url
+  sshPrivateKey: $ssh_privkey
 EOF
 )"
 
