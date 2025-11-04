@@ -1,7 +1,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: managed-cluster-gcp-infra
+  name: managed-cluster-gcp-gitops-placement
   namespace: flux-system
 spec:
   interval: 1m0s
@@ -15,20 +15,13 @@ spec:
   force: true
   patches:
     - target:
-        kind: ManagedClusterSetBinding
-        name: replace-me
-      patch: |-
-        - op: replace
-          path: /metadata/name
-          value: global
-        - op: replace
-          path: /spec/clusterSet
-          value: global
-    - target:
         kind: Placement
         name: replace-me
         namespace: openshift-gitops
       patch: |-
+        - op: replace
+          path: /metadata/name
+          value: gcp-gitops-placement
         - op: replace
           path: /spec/clusterSets
           value: ["global"]
@@ -39,6 +32,23 @@ spec:
               operator: In
               values:
                 - Google
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: managed-cluster-gcp-infra
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: cluster-config
+    namespace: flux-system
+  path: ./infra/components/resources/argocd/appset
+  wait: true
+  prune: true
+  force: true
+  patches:
     - target:
         kind: ApplicationSet
         name: replace-me
@@ -78,21 +88,6 @@ spec:
   prune: true
   force: true
   patches:
-    - target:
-        kind: Placement
-        name: replace-me
-        namespace: openshift-gitops
-      patch: |-
-        - op: replace
-          path: /spec/clusterSets
-          value: ["global"]
-        - op: replace
-          path: /spec/predicates/0/requiredClusterSelector/labelSelector/matchExpressions
-          value:
-            - key: cloud
-              operator: In
-              values:
-                - Google
     - target:
         kind: ApplicationSet
         name: replace-me
