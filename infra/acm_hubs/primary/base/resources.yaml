@@ -96,7 +96,7 @@ spec:
         - op: replace
           path: /metadata/name
           value: aws-clusters
-        - op: replace
+        - op: add
           path: /spec/clusterSelector/labelSelector
           value:
             cloud: Amazon
@@ -123,7 +123,7 @@ spec:
         - op: replace
           path: /metadata/name
           value: aws-clusters
-        - op: replace
+        - op: add
           path: /spec/clusterSelector/labelSelector
           value:
             cloud: Google
