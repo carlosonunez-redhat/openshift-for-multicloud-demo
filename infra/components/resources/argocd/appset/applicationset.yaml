@@ -20,7 +20,7 @@ spec:
         namespace: argo-resources
         server: https://kubernetes.default.svc
       project: default
-      sources: replace-me
+      sources: [] # replace-me
       syncPolicy:
         automated: {}
         syncOptions:

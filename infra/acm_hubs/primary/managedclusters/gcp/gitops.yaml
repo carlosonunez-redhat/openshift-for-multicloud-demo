@@ -18,18 +18,6 @@ spec:
         kind: ApplicationSet
         name: replace-me
       patch: |-
-        - op: replace
-          path: spec/template/spec/sources
-          value:
-            - repoURL: https://github.com/carlosonunez-redhat/openshift-for-multicloud-demo
-              targetRevision: main
-              path: ./infra/cluster/gcp
-              directory:
-                recurse: true
-    - target:
-        kind: ApplicationSet
-        name: replace-me
-      patch: |-
         apiVersion: argoproj.io/v1alpha1
         kind: ApplicationSet
         metadata:
@@ -48,6 +36,10 @@ spec:
                 argocd.argoproj.io/skip-reconcile: "true" 
               name: managed-cluster-gcp-apps
             spec:
+              sources:
+                - repoURL: https://github.com/carlosonunez-redhat/openshift-for-multicloud-demo
+                  targetRevision: main
+                  path: ./infra/cluster/gcp
               sources: {}
               destination:
                 namespace: argo-resources
@@ -70,23 +62,11 @@ spec:
     kind: GitRepository
     name: cluster-config
     namespace: flux-system
-  path: ./infra/components/resources/argocd/appset
+  path: ./apps/components/resources/argocd/appset
   wait: true
   prune: true
   force: true
   patches:
-    - target:
-        kind: ApplicationSet
-        name: replace-me
-      patch: |-
-        - op: replace
-          path: spec/template/spec/sources
-          value:
-            - repoURL: https://github.com/carlosonunez-redhat/openshift-for-multicloud-demo
-              targetRevision: main
-              path: ./apps
-              directory:
-                recurse: true
     - target:
         kind: ApplicationSet
         name: replace-me
@@ -109,7 +89,12 @@ spec:
                 argocd.argoproj.io/skip-reconcile: "true" 
               name: managed-cluster-gcp-apps
             spec:
-              sources: {}
+              sources:
+                - repoURL: https://github.com/carlosonunez-redhat/openshift-for-multicloud-demo
+                  targetRevision: main
+                  path: ./apps
+                  directory:
+                    recurse: true
               destination:
                 namespace: argo-resources
                 server: https://kubernetes.default.svc
