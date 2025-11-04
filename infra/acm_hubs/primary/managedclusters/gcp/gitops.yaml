@@ -68,7 +68,7 @@ spec:
       patch: |-
         - op: replace
           path: /metadata/name
-          value: gitops-cluster-aws
+          value: gitops-cluster-gcp
         - op: replace
           path: /spec/placementRef/name
           value: gcp-gitops-placement
