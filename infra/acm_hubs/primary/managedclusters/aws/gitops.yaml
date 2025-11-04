@@ -15,6 +15,25 @@ spec:
   force: true
   patches:
     - target:
+        kind: ManagedClusterSetBinding
+        name: replace-me
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: aws-infra-mcsb
+    - target:
+        kind: Placement
+        name: replace-me
+        namespace: openshift-gitops
+      patch: |-
+        - op: replace
+          path: /spec/predicates/0/requiredClusterSelector/labelSelector/matchExpressions
+          value:
+            - key: cloud
+              operator: In
+              values:
+                - Amazon
+    - target:
         kind: ApplicationSet
         name: replace-me
       patch: |-
@@ -53,6 +72,25 @@ spec:
   prune: true
   force: true
   patches:
+    - target:
+        kind: ManagedClusterSetBinding
+        name: replace-me
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: aws-apps-mcsb
+    - target:
+        kind: Placement
+        name: replace-me
+        namespace: openshift-gitops
+      patch: |-
+        - op: replace
+          path: /spec/predicates/0/requiredClusterSelector/labelSelector/matchExpressions
+          value:
+            - key: cloud
+              operator: In
+              values:
+                - Amazon
     - target:
         kind: ApplicationSet
         name: replace-me

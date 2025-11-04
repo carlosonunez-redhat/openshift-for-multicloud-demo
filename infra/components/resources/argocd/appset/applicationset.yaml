@@ -7,7 +7,9 @@ spec:
   generators:
   - clusterDecisionResource:
       configMapRef: acm-placement
-      name: placementdecision
+      labelSelector:
+        matchLabels:
+          cluster.open-cluster-management.io/placement: placement-name
       requeueAfterSeconds: 30
   template:
     metadata:
