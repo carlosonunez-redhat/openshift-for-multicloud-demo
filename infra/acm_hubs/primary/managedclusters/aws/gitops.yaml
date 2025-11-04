@@ -70,7 +70,7 @@ spec:
     kind: GitRepository
     name: cluster-config
     namespace: flux-system
-  path: ./apps/components/resources/argocd/appset
+  path: ./infra/components/resources/argocd/appset
   wait: true
   prune: true
   force: true
