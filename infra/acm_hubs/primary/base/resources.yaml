@@ -65,11 +65,11 @@ spec:
           value: gitops-cluster
         - op: replace
           path: /metadata/namespace
-          value: apps
+          value: gitops-clusters
     - target:
         kind: Namespace
         name: replace-me
       patch: |-
         - op: replace
           path: /metadata/name
-          value: apps
+          value: gitops-clusters

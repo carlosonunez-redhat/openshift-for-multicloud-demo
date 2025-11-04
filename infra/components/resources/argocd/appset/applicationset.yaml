@@ -7,14 +7,13 @@ spec:
   generators:
   - clusterDecisionResource:
       configMapRef: acm-placement
-      name: replace-me
+      name: global
       requeueAfterSeconds: 30
   template:
     metadata:
       annotations:
         apps.open-cluster-management.io/ocm-managed-cluster: managed-cluster-name
         apps.open-cluster-management.io/ocm-managed-cluster-app-namespace: openshift-gitops
-        argocd.argoproj.io/skip-reconcile: "true" 
       name: application-name
     spec:
       destination:
