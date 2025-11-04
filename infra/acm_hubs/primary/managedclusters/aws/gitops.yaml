@@ -17,11 +17,18 @@ spec:
     - target:
         kind: ApplicationSet
         name: replace-me
+      patches: |-
+        - op: replace
+          path: /metadata/name
+          value: managed-cluster-aws-infra
+    - target:
+        kind: ApplicationSet
+        name: replace-me
       patch: |-
         apiVersion: argoproj.io/v1alpha1
         kind: ApplicationSet
         metadata:
-          name: managed-cluster-aws-apps
+          name: managed-cluster-aws-infra
           namespace: openshift-gitops
         spec:
           generators:
@@ -67,6 +74,13 @@ spec:
   prune: true
   force: true
   patches:
+    - target:
+        kind: ApplicationSet
+        name: replace-me
+      patches: |-
+        - op: replace
+          path: /metadata/name
+          value: managed-cluster-aws-apps
     - target:
         kind: ApplicationSet
         name: replace-me
