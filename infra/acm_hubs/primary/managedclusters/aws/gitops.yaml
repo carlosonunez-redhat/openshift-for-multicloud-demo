@@ -22,7 +22,7 @@ spec:
           path: /metadata/name
           value: managed-cluster-aws-infra
         - op: replace
-          path: /spec/template/metaadata/annotations/app.open-cluster-management.io/ocm-managed-cluster
+          path: /spec/template/metadata/annotations/app.open-cluster-management.io/ocm-managed-cluster
           value: managed-cluster-aws
         - op: replace
           path: /spec/template/name
@@ -62,7 +62,7 @@ spec:
           path: /metadata/name
           value: managed-cluster-aws-infra
         - op: replace
-          path: /spec/template/metaadata/annotations/app.open-cluster-management.io/ocm-managed-cluster
+          path: /spec/template/metadata/annotations/app.open-cluster-management.io/ocm-managed-cluster
           value: managed-cluster-aws
         - op: replace
           path: /spec/template/name
