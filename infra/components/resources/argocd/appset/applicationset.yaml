@@ -6,7 +6,10 @@ metadata:
 spec:
   generators:
   - clusterDecisionResource:
-      configMapRef: acm-placement
+      configMapRef: ocm-placement-generator
+      labelSelector:
+        matchLabels:
+          cluster.open-cluster-management.io/placement: aws-app-placement
       requeueAfterSeconds: 30
   template:
     metadata:
