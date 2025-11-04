@@ -16,6 +16,7 @@ OPTIONS
   --regenerate-secrets     Recreate existing secrets entirely.
   --secrets-only           Only refresh the secrets in the cluster config directory.
   --kustomizations-only    Refresh secrets and managed cluster kustomizations.
+  --repo-urls-only         Refresh secrets and repo URLs in GitOpsServer resources.
 
 ENVIRONMENT VARIABLES
 
@@ -495,6 +496,25 @@ update_managedcluster_kustomizations() {
   done
 }
 
+regenerate_repo_urls() {
+  local url file gotURL
+  url=$(sops decrypt "$CONFIG_YAML_PATH" | yq -r '.common.gitops.repo.location.url')
+  if test -z "$url" || test "$url" == null
+  then
+    >&2 echo "ERROR: GitOps URL is not defined."
+    return 1
+  fi
+  grep -r 'repoURL:' "$PWD/infra/acm_hubs" |
+    while read -r kvp
+    do
+      file=$(cut -f1 -d ':' <<< "$kvp" | tr -d ':')
+      gotURL=$(sed -E 's/.*repoURL: //' <<< "$kvp")
+      test "$gotURL" == "$url" && continue
+      >&2 echo "INFO: Updating repoURL in resource '$file' to '$url'"
+      xargs sed -Ei '' "s;repoURL:.*;repoURL: $url;g" "$file"
+    done
+}
+
 show_help_if_requested() {
   grep -Eq '[-]{1,2}help' <<< "$@" || return 0
   usage
@@ -513,6 +533,10 @@ secrets_regeneration_requested() {
   grep -Eq -- '--regenerate-secrets' <<< "$@"
 }
 
+refresh_repo_urls_only() {
+  grep -Eq -- '--repo-urls-only' <<< "$@"
+}
+
 set -e
 show_help_if_requested "$@"
 preflight || exit 1
@@ -523,6 +547,12 @@ then
   op=updated
   test "${REGENERATE_SECRETS,,}" == 'true' && op=created
   >&2 echo "INFO: Secrets $op (if needed); stopping."
+  exit 0
+fi
+regenerate_repo_urls
+if refresh_repo_urls_only "$@"
+then
+  >&2 echo "INFO: Repo URLs updated; stopping."
   exit 0
 fi
 
