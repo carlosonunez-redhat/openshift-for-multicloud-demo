@@ -1,3 +1,4 @@
+---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -44,6 +45,43 @@ spec:
             - key: cluster.open-cluster-management.io/unavailable
               operator: Equal
 
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: gitops-cluster-aws
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: cluster-config
+    namespace: flux-system
+  path: ./infra/components/resources/argocd/cluster
+  wait: true
+  prune: true
+  patches:
+    - target:
+        kind: GitOpsCluster
+        name: replace-me
+        namespace: replace-me
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: gitops-cluster-aws
+        - op: replace
+          path: /metadata/namespace
+          value: openshift-gitops
+        - op: replace
+          path: /spec/placementRef/name
+          value: aws-gitops-placement
+    - target:
+        kind: Namespace
+        name: replace-me
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: gitops-clusters
 ---
 
 apiVersion: kustomize.toolkit.fluxcd.io/v1
