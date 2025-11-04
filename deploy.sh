@@ -375,11 +375,47 @@ YAML
     done
   }
 
+  _write_acm_gitops_secret() {
+    url=$(sops decrypt "$CONFIG_YAML_PATH" | yq -r '.common.gitops.repo.settings.location.url')
+    if test -z "$url"
+    then
+      >&2 echo "ERROR: GitOps URL is not defined."
+      return 1
+    fi
+    ssh_privkey=$(sops decrypt "$CONFIG_YAML_PATH" | yq -r '.common.gitops.repo.settings.credentials.ssh.private')
+    if test -z "$ssh_privkey"
+    then
+      >&2 echo "ERROR: SSH private key for GitOps repo [$url] is not defined."
+      return 1
+    fi
+    secret_fp="$(dirname "$0")/infra/secrets/argocd.yaml"
+    _encrypt_file_if_pgp_fp_differs_from_cluster_pgp_fp \
+      "$secret_fp" \
+      '.sops.pgp[0].fp' \
+      "$(cat <<-EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: repo-credentials
+  namespace: openshift-gitops
+  labels:
+    argocd.argoproj.io/secret-type: repository
+type: Opaque
+stringData:
+  type: git
+  url: $(base64 -w 0 <<< "$url")
+  sshPrivateKey: $(base64 -w 0 <<< "$ssh_privkey")
+EOF
+)"
+
+  }
+
   _write_cluster_sops_config_if_pgp_fp_changed
   _write_pull_secret_if_pgp_fp_changed
   _write_cloud_secret_if_pgp_fp_changed 'aws'
   _write_cloud_secret_if_pgp_fp_changed 'gcp' 'service_account.json/osServiceAccount.json'
   _write_dataprotection_secret_if_pgp_fp_changed 'aws'
+  _write_acm_gitops_secret
   _write_ssh_key_secret
   _write_installconfig_cloud_secrets 'aws' 'gcp'
   _update_secrets_kustomization_yaml
