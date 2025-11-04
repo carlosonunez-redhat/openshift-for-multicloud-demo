@@ -4,6 +4,6 @@ metadata:
   name: replace-me
 spec:
   clusterSelector:
-    selectorType: LabelSelector
+    selectorType: ExclusiveClusterSetLabel
     labelSelector:
       matchExpressions: []
