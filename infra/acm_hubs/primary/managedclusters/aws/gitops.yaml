@@ -19,62 +19,32 @@ spec:
         name: replace-me
       patch: |-
         - op: replace
-          path: /metadata/name
-          value: managed-cluster-aws-infra
-        - op: replace
-          path: /spec/template/metadata/annotations/app.open-cluster-management.io/ocm-managed-cluster
-          value: managed-cluster-aws
-        - op: replace
-          path: /spec/template/name
-          value: '{{name}}'
-        - op: replace
-          path: /spec/template/spec/destination/namespace
-          value: apps
-        - op: replace
-          path: /spec/template/spec/sources
+          path: spec/template/spec/sources
           value:
             - repoURL: https://github.com/carlosonunez-redhat/openshift-for-multicloud-demo
               targetRevision: main
-              path: ./infra/clusters/aws
-
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: managed-cluster-aws-apps
-  namespace: flux-system
-spec:
-  interval: 1m0s
-  sourceRef:
-    kind: GitRepository
-    name: cluster-config
-    namespace: flux-system
-  path: ./infra/components/resources/argocd/appset
-  wait: true
-  prune: true
-  force: true
-  patches:
+              path: ./infra/cluster/aws
+              directory:
+                recurse: true
     - target:
         kind: ApplicationSet
         name: replace-me
       patch: |-
-        - op: replace
-          path: /metadata/name
-          value: managed-cluster-aws-infra
-        - op: replace
-          path: /spec/template/metadata/annotations/app.open-cluster-management.io/ocm-managed-cluster
-          value: managed-cluster-aws
-        - op: replace
-          path: /spec/template/name
-          value: '{{name}}'
-        - op: replace
-          path: /spec/template/spec/destination/namespace
-          value: apps
-        - op: replace
-          path: /spec/template/spec/sources
-          value:
-            - repoURL: https://github.com/carlosonunez-redhat/openshift-for-multicloud-demo
-              targetRevision: main
-              path: ./apps
-              directory:
-                recurse: true
+        apiVersion: argoproj.io/v1alpha1
+        kind: ApplicationSet
+        metadata:
+          name: managed-cluster-aws-apps
+          namespace: openshift-gitops
+        spec:
+          generators:
+          - clusterDecisionResource:
+              configMapRef: acm-placement
+              requeueAfterSeconds: 30
+          template:
+            metadata:
+              annotations:
+                apps.open-cluster-management.io/ocm-managed-cluster: managed-cluster-aws-apps
+                apps.open-cluster-management.io/ocm-managed-cluster-app-namespace: openshift-gitops
+                argocd.argoproj.io/skip-reconcile: "true" 
+              name: managed-cluster-aws-apps
+            spec:

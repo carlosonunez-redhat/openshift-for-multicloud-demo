@@ -19,23 +19,43 @@ spec:
         name: replace-me
       patch: |-
         - op: replace
-          path: /metadata/name
-          value: managed-cluster-gcp-infra
-        - op: replace
-          path: /spec/template/metadata/annotations/app.open-cluster-management.io/ocm-managed-cluster
-          value: managed-cluster-gcp
-        - op: replace
-          path: /spec/template/name
-          value: '{{name}}'
-        - op: replace
-          path: /spec/template/spec/destination/namespace
-          value: apps
-        - op: replace
-          path: /spec/template/spec/sources
+          path: spec/template/spec/sources
           value:
             - repoURL: https://github.com/carlosonunez-redhat/openshift-for-multicloud-demo
               targetRevision: main
-              path: ./infra/clusters/gcp
+              path: ./infra/cluster/gcp
+              directory:
+                recurse: true
+    - target:
+        kind: ApplicationSet
+        name: replace-me
+      patch: |-
+        apiVersion: argoproj.io/v1alpha1
+        kind: ApplicationSet
+        metadata:
+          name: managed-cluster-gcp-apps
+          namespace: openshift-gitops
+        spec:
+          generators:
+          - clusterDecisionResource:
+              configMapRef: acm-placement
+              requeueAfterSeconds: 30
+          template:
+            metadata:
+              annotations:
+                apps.open-cluster-management.io/ocm-managed-cluster: managed-cluster-gcp-apps
+                apps.open-cluster-management.io/ocm-managed-cluster-app-namespace: openshift-gitops
+                argocd.argoproj.io/skip-reconcile: "true" 
+              name: managed-cluster-gcp-apps
+            spec:
+              destination:
+                namespace: application-namespace
+                server: https://kubernetes.default.svc
+              project: default
+              syncPolicy:
+                automated: {}
+                syncOptions:
+                - CreateNamespace=true
 
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -59,22 +79,40 @@ spec:
         name: replace-me
       patch: |-
         - op: replace
-          path: /metadata/name
-          value: managed-cluster-gcp-infra
-        - op: replace
-          path: /spec/template/metadata/annotations/app.open-cluster-management.io/ocm-managed-cluster
-          value: managed-cluster-gcp
-        - op: replace
-          path: /spec/template/name
-          value: '{{name}}'
-        - op: replace
-          path: /spec/template/spec/destination/namespace
-          value: apps
-        - op: replace
-          path: /spec/template/spec/sources
+          path: spec/template/spec/sources
           value:
             - repoURL: https://github.com/carlosonunez-redhat/openshift-for-multicloud-demo
               targetRevision: main
               path: ./apps
               directory:
                 recurse: true
+    - target:
+        kind: ApplicationSet
+        name: replace-me
+      patch: |-
+        apiVersion: argoproj.io/v1alpha1
+        kind: ApplicationSet
+        metadata:
+          name: managed-cluster-gcp-apps
+          namespace: openshift-gitops
+        spec:
+          generators:
+          - clusterDecisionResource:
+              configMapRef: acm-placement
+              requeueAfterSeconds: 30
+          template:
+            metadata:
+              annotations:
+                apps.open-cluster-management.io/ocm-managed-cluster: managed-cluster-gcp-apps
+                apps.open-cluster-management.io/ocm-managed-cluster-app-namespace: openshift-gitops
+                argocd.argoproj.io/skip-reconcile: "true" 
+              name: managed-cluster-gcp-apps
+            spec:
+              destination:
+                namespace: application-namespace
+                server: https://kubernetes.default.svc
+              project: default
+              syncPolicy:
+                automated: {}
+                syncOptions:
+                - CreateNamespace=true
