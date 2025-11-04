@@ -97,9 +97,9 @@ spec:
           path: /metadata/name
           value: aws-clusters
         - op: add
-          path: /spec/clusterSelector/labelSelector
+          path: /spec/clusterSelector/labelSelector/matchExpressions
           value:
-            cloud: Amazon
+            - cloud: Amazon
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
@@ -124,6 +124,6 @@ spec:
           path: /metadata/name
           value: aws-clusters
         - op: add
-          path: /spec/clusterSelector/labelSelector
+          path: /spec/clusterSelector/labelSelector/matchExpressions
           value:
-            cloud: Google
+            - cloud: Google

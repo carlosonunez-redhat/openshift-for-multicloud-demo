@@ -6,4 +6,4 @@ spec:
   clusterSelector:
     selectorType: LabelSelector
     labelSelector:
-      cloud: replace-me
+      matchExpressions: []
