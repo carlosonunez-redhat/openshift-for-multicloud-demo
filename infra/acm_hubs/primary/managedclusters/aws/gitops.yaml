@@ -77,7 +77,7 @@ spec:
     - target:
         kind: ApplicationSet
         name: replace-me
-      patches: |-
+      patch: |-
         - op: replace
           path: /metadata/name
           value: managed-cluster-aws-apps
