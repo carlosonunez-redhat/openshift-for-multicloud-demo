@@ -20,9 +20,9 @@ spec:
     spec:
       destination:
         namespace: replace-me
-        server: https://kubernetes.default.svc
+        server: '{{server}}'
       project: default
-      sources: [] # replace-me
+      source: {} # replace-me
       syncPolicy:
         automated: {}
         syncOptions:

@@ -111,13 +111,13 @@ spec:
           path: /spec/template/metadata/name
           value: managed-cluster-aws-infra
         - op: replace
-          path: /spec/template/spec/sources
+          path: /spec/template/spec/source
           value:
-            - repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
-              targetRevision: main
-              path: ./infra/clusters/aws/infra
-              directory:
-                recurse: true
+            repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
+            targetRevision: main
+            path: ./infra/clusters/aws/infra
+            directory:
+              recurse: true
         - op: replace
           path: /spec/generators/0/clusterDecisionResource/labelSelector/matchLabels/cluster.open-cluster-management.io~1placement
           value: aws-gitops-placement
@@ -159,13 +159,13 @@ spec:
           path: /spec/generators/0/clusterDecisionResource/labelSelector/matchLabels/cluster.open-cluster-management.io~1placement
           value: aws-gitops-placement
         - op: replace
-          path: /spec/template/spec/sources
+          path: /spec/template/spec/source
           value:
-            - repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
-              targetRevision: main
-              path: ./infra/clusters/aws/apps
-              directory:
-                recurse: true
+            repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
+            targetRevision: main
+            path: ./infra/clusters/aws/apps
+            directory:
+              recurse: true
         - op: replace
           path: /spec/template/spec/destination/namespace
           value: managed-cluster-aws
