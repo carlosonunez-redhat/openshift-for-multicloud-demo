@@ -31,4 +31,4 @@ spec:
       enabled: true
     prometheus:
       exportMetrics: true
-  env: {}
+  env: []
