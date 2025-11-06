@@ -84,7 +84,7 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: managed-cluster-aws-infra
+  name: managed-cluster-aws-operators
   namespace: flux-system
 spec:
   interval: 1m0s
@@ -103,19 +103,19 @@ spec:
       patch: |-
         - op: replace
           path: /metadata/name
-          value: managed-cluster-aws-infra
+          value: managed-cluster-aws-operators
         - op: replace
           path: /spec/template/metadata/annotations/apps.open-cluster-management.io~1ocm-managed-cluster
           value: managed-cluster-aws
         - op: replace
           path: /spec/template/metadata/name
-          value: managed-cluster-aws-infra
+          value: managed-cluster-aws-operators
         - op: replace
           path: /spec/template/spec/source
           value:
             repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
             targetRevision: main
-            path: ./infra/clusters/aws/infra
+            path: ./infra/clusters/aws/infra/operators
         - op: replace
           path: /spec/generators/0/clusterDecisionResource/labelSelector/matchLabels/cluster.open-cluster-management.io~1placement
           value: aws-gitops-placement
@@ -123,6 +123,49 @@ spec:
           path: /spec/template/spec/destination/namespace
           value: managed-cluster-aws
 
+---
+
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: managed-cluster-aws-operators
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: cluster-config
+    namespace: flux-system
+  path: ./infra/components/resources/argocd/appset
+  wait: true
+  prune: true
+  force: true
+  patches:
+    - target:
+        kind: ApplicationSet
+        name: replace-me
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: managed-cluster-aws-resources
+        - op: replace
+          path: /spec/template/metadata/annotations/apps.open-cluster-management.io~1ocm-managed-cluster
+          value: managed-cluster-aws
+        - op: replace
+          path: /spec/template/metadata/name
+          value: managed-cluster-aws-resources
+        - op: replace
+          path: /spec/template/spec/source
+          value:
+            repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
+            targetRevision: main
+            path: ./infra/clusters/aws/infra/resources
+        - op: replace
+          path: /spec/generators/0/clusterDecisionResource/labelSelector/matchLabels/cluster.open-cluster-management.io~1placement
+          value: aws-gitops-placement
+        - op: replace
+          path: /spec/template/spec/destination/namespace
+          value: managed-cluster-aws
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
