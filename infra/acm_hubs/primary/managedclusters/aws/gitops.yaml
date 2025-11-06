@@ -163,3 +163,6 @@ spec:
               path: ./infra/clusters/aws/apps
               directory:
                 recurse: true
+        - op: replace
+          path: /spec/destination/namespace
+          value: managed-cluster-aws
