@@ -115,7 +115,7 @@ spec:
           value:
             - repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
               targetRevision: main
-              path: ./infra/clusters/aws
+              path: ./infra/clusters/aws/infra
               directory:
                 recurse: true
         - op: replace
@@ -160,6 +160,6 @@ spec:
           value:
             - repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
               targetRevision: main
-              path: ./apps
+              path: ./infra/clusters/aws/apps
               directory:
                 recurse: true
