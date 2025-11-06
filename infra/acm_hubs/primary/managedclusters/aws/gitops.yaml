@@ -44,6 +44,9 @@ spec:
               operator: Equal
             - key: cluster.open-cluster-management.io/unavailable
               operator: Equal
+        - op: replace
+          path: /spec/template/spec/destination/namespace
+          value: managed-cluster-aws
 
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
@@ -164,5 +167,5 @@ spec:
               directory:
                 recurse: true
         - op: replace
-          path: /spec/destination/namespace
+          path: /spec/template/spec/destination/namespace
           value: managed-cluster-aws
