@@ -102,10 +102,10 @@ spec:
         kind: ConfigMap
         name: argocd-cm
       patch: |-
-        op: add
-        path: /data
-        value:
-          kustomize.buildOptions: --enable-alpha-options
+        - op: add
+          path: /data
+          value:
+            kustomize.buildOptions: --enable-alpha-options
     - target:
         kind: ArgoCD
         name: openshift-gitops
