@@ -34,6 +34,31 @@
       data:
         sops.asc: "{{ common.gitops.repo.secrets.cluster_gpg_key | b64encode }}"
 
+- name: "[{{ env.name }}] Add private key to ArgoCD namespace (so that managed clusters can re-use cluster secrets)"
+  when: env.acm_config.role == primary
+  block:
+    - kubernetes.core.k8s:
+        state: present
+        kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: openshift-gitops
+
+    - kubernetes.core.k8s:
+        state: present
+        kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: cluster-key
+            namespace: openshift-gitops
+          type: Opaque
+          data:
+            sops.asc: "{{ common.gitops.repo.secrets.cluster_gpg_key | b64encode }}"
+
 - name: "[{{ env.name }}] Configure Flux and connect cluster to this repository"
   kubernetes.core.k8s:
     state: present

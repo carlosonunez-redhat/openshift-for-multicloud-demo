@@ -81,3 +81,85 @@ spec:
         - op: replace
           path: /spec/clusterSet
           value: global
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: argocd-server-options
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  sourceRef:
+    kind: GitRepository
+    name: cluster-config
+    namespace: flux-system
+  path: ./infra/components/resources/argocd/serveroptions
+  wait: true
+  prune: true
+  force: true
+  patches:
+    - target:
+        kind: ArgoCD
+        name: openshift-gitops
+      patch: |-
+        - op: replace
+          path: /spec
+          value:
+            repo:
+              volumes:
+                - name: workdir
+                  emptyDir: {}
+                - name: sops-gpg
+                  secret:
+                    secretName: cluster-key
+                    defaultMode: 0400
+              volumeMounts:
+                - mountPath: /.config/kustomize/plugin/viaduct.ai/v1/ksops/ksops
+                  name: workdir
+                  subPath: ksops
+                - mountPath: /usr/local/bin/kustomize
+                  name: workdir
+                  subPath: kustomize
+                - mountPath: /usr/local/bin/sops
+                  name: workdir
+                  subPath: sops
+                - mountPath: /sops-gpg
+                  name: workdir
+                  subPath: sops-gpg
+              env:
+                - name: GNUPGHOME
+                  value: /sops-gpg/.gnupg
+                - name: XDG_CONFIG_HOME
+                  value: /.config
+              initContainers:
+              - name: install-ksops
+                image: viaductoss/ksops:v3.0.2
+                command: ["/bin/sh", "-c"]
+                volumeMounts:
+                  - mountPath: /workdir
+                    name: workdir
+                  - mountPath: /keys
+                    name: sops-gpg
+                args:
+                  - |
+                    set -euo pipefail
+                    >&2 echo "Installing kSops..."
+                    cp ksops /workdir
+                    >&2 echo "Installing Kustomize..."
+                    cp $GOPATH/bin/kustomize /workdir
+
+                    # Import GPG key
+                    >&2 echo "Importing GPG key..."
+                    mkdir -p /workdir/sops-gpg/.gnupg
+                    chmod 700 /workdir/sops-gpg/.gnupg
+                    gpg --homedir /workdir/sops-gpg/.gnupg --import /keys/sops.asc
+
+                    # Set ultimate trust for the imported key
+                    KEY_FP=$(gpg --homedir /workdir/sops-gpg/.gnupg --list-keys --with-colons | awk -F: '/^fpr:/ {print $10; exit}')
+                    echo "${KEY_FP}:6:" | gpg --homedir /workdir/sops-gpg/.gnupg --import-ownertrust
+
+                    # Fix permissions
+                    chmod -R 600 /workdir/sops-gpg/.gnupg/*
+                    chmod 700 /workdir/sops-gpg/.gnupg
+                    chown -R 999:999 /workdir/sops-gpg/
+                    chown -R 999:999 /workdir/kustomize/
