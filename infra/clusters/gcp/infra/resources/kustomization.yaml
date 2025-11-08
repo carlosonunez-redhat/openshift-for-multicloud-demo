@@ -7,13 +7,15 @@ patches:
   - target:
       kind: StorageCluster
       name: replace-me
+      namespace: portworx
     patch: |-
       - op: replace
         path: /metadata/name
-        value: aws-sc
+        value: gcp-sc
   - target:
       kind: Secret
       name: cloud-creds
+      namespace: replace-me
     patch: |-
       - op: replace
         path: /metadata/namespace
