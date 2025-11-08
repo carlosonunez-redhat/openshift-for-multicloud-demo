@@ -1,10 +1,10 @@
-# This resources enables you to customize the ArgoCD custom resource
+# This resources enables you to customize the ArgoCD server configuration
 # that the oprerator creates to install ArgoCD into the cluster.
 # See this article for the complete specification:
 # https://argocd-operator.readthedocs.io/en/latest/reference/argocd/
-apiVersion: argoproj.io/v1beta1
-kind: ArgoCD
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: openshift-gitops
+  name: argocd-cm
   namespace: openshift-gitops
-spec: {}
+data: {}

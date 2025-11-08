@@ -99,10 +99,18 @@ spec:
   force: true
   patches:
     - target:
+        kind: ConfigMap
+        name: argocd-cm
+      patch: |-
+        op: add
+        path: /data
+        value:
+          kustomize.buildOptions: --enable-alpha-options
+    - target:
         kind: ArgoCD
         name: openshift-gitops
       patch: |-
-        - op: replace
+        - op: add
           path: /spec
           value:
             repo:
