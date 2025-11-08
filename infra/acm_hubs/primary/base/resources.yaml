@@ -142,7 +142,7 @@ spec:
                   value: /.config/sops/.sops.yaml
               initContainers:
               - name: install-ksops
-                image: viaductoss/ksops:v3.0.2
+                image: viaductoss/ksops:v4.4.0
                 command: ["/bin/sh", "-c"]
                 volumeMounts:
                   - mountPath: /workdir
