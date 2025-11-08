@@ -1,0 +1,9 @@
+# This resources enables you to customize the ArgoCD custom resource
+# that the oprerator creates to install ArgoCD into the cluster.
+# See this article for the complete specification:
+# https://argocd-operator.readthedocs.io/en/latest/reference/argocd/
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - serveroptions.yaml
+
