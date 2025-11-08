@@ -142,7 +142,6 @@ spec:
                     name: sops-gpg
                 args:
                   - |
-                    set -euo pipefail
                     >&2 echo "Installing kSops..."
                     cp ksops /workdir
                     >&2 echo "Installing Kustomize..."
