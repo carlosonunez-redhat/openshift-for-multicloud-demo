@@ -30,4 +30,9 @@ spec:
       enabled: true
     prometheus:
       exportMetrics: true
-  env: {}
+  env:
+    - name: GOOGLE_APPLICATION_CREDENTIALS
+      valueFrom:
+        secretKeyRef:
+          key: cloud-creds
+          name: project

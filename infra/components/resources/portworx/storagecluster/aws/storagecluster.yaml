@@ -31,4 +31,14 @@ spec:
       enabled: true
     prometheus:
       exportMetrics: true
-  env: []
+  env:
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          key: cloud-creds
+          name: aws_access_key_id
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          key: cloud-creds
+          name: aws_secret_access_key
