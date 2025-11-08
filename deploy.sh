@@ -81,7 +81,7 @@ upload_config_into_data_volume() {
 deploy() {
   cmd="$COMPOSE_BIN run --rm"
   test -n "$REBUILD" && cmd="$cmd --build"
-  $cmd deploy |
+  $cmd -e CLUSTER_KEY_FP=$(_cluster_pgp_key_fp) deploy |
     grep --color=always -Ev '(^[a-z0-9]{64}$|openshift-for-multicloud)'
 }
 

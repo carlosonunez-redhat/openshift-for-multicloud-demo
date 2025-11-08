@@ -113,10 +113,16 @@ spec:
                   secret:
                     secretName: cluster-key
                     defaultMode: 0400
+                - name: sops-config
+                  configMap:
+                    name: sops-config
               volumeMounts:
                 - mountPath: /.config/kustomize/plugin/viaduct.ai/v1/ksops/ksops
                   name: workdir
                   subPath: ksops
+                - mountPath: /.config
+                  name: sops-config
+                  subPath: .sops.yaml
                 - mountPath: /usr/local/bin/kustomize
                   name: workdir
                   subPath: kustomize
@@ -131,6 +137,8 @@ spec:
                   value: /sops-gpg/.gnupg
                 - name: XDG_CONFIG_HOME
                   value: /.config
+                - name: SOPS_CONFIG
+                  value: /.sops.yaml
               initContainers:
               - name: install-ksops
                 image: viaductoss/ksops:v3.0.2

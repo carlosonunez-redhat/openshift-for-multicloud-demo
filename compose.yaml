@@ -15,14 +15,15 @@ services:
       - $PWD/tasks:/work/tasks
     working_dir: /work
     entrypoint: bash
-    # TODO: Remove this workaround once this PR gets merged:
-    # https://github.com/ansible/ansible/pull/85758
     environment:
-      ANSIBLE_FORCE_COLOR: "true"
+      - ANSIBLE_FORCE_COLOR=true
+      - CLUSTER_KEY_FP
     command:
       - -c
       - |-
-        ansible-playbook --extra-vars '@/data/config.yaml' deploy.yaml |
+        ansible-playbook --extra-vars '@/data/config.yaml' \
+          --extra-vars cluster_key_fp=$CLUSTER_KEY_FP \
+          deploy.yaml |
           grep --color=always -Ev --line-buffered 'included: /work/tasks'
   confirm_config_usable:
     build:

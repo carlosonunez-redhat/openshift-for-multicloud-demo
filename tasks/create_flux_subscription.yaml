@@ -51,6 +51,23 @@
         kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
         definition:
           apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: sops-config
+            namespace: openshift-gitops
+          data:
+            .sops.yaml: |-
+              ---
+              creation-rules
+              - path_regex: '.*.yaml'
+                encrypted_regex: '^(data|stringData)$'
+                pgp: {{ cluster_key_fp }}
+
+    - kubernetes.core.k8s:
+        state: present
+        kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+        definition:
+          apiVersion: v1
           kind: Secret
           metadata:
             name: cluster-key
