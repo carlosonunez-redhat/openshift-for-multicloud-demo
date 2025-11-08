@@ -36,7 +36,7 @@ spec:
     kind: GitRepository
     name: cluster-config
     namespace: flux-system
-  path: ./infra/components/resources/multiclusterengine
+  path: ./infra/components/resources/acm/multiclusterengine
   wait: true
   prune: true
   patches:
