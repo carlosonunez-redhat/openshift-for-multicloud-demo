@@ -18,3 +18,5 @@ patches:
       - op: replace
         path: /metadata/namespace
         value: portworx
+generators:
+  - ./credentials_generator.yaml
