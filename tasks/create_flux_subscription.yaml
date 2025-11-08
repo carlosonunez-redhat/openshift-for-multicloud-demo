@@ -35,7 +35,7 @@
         sops.asc: "{{ common.gitops.repo.secrets.cluster_gpg_key | b64encode }}"
 
 - name: "[{{ env.name }}] Add private key to ArgoCD namespace (so that managed clusters can re-use cluster secrets)"
-  when: env.acm_config.role == primary
+  when: env.acm_config.role == "primary"
   block:
     - kubernetes.core.k8s:
         state: present

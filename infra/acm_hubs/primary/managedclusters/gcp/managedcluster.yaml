@@ -67,7 +67,7 @@ spec:
       patch: |-
         - op: replace
           path: /spec/baseDomain
-          value: 2bbm8.gcp.redhatworkshops.io
+          value: n7xbp.gcp.redhatworkshops.io
         - op: replace
           path: /metadata/name
           value: managed-cluster-gcp
