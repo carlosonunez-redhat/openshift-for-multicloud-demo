@@ -180,7 +180,7 @@ spec:
                       'kustomize;https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.8.0/kustomize_v5.8.0_linux_amd64.tar.gz'
                     do
                       name="$(echo "$kvp" | cut -f1 -d ';')"
-                      url=$(echo "$kvp" | cut -f2 -d ';')"
+                      url="$(echo "$kvp" | cut -f2 -d ';')"
                       curl -Lo "/tmp/${name}.tar.gz" "$url" &&
                         tar -xvf "/tmp/${name}.tar.gz" -C /workdir
                     done
