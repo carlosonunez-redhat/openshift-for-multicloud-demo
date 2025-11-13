@@ -34,5 +34,5 @@ spec:
     - name: GOOGLE_APPLICATION_CREDENTIALS
       valueFrom:
         secretKeyRef:
-          key: cloud-creds
-          name: project
+          key: osServiceAccount.json
+          name: cloud-creds
