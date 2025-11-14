@@ -30,9 +30,11 @@ spec:
       enabled: true
     prometheus:
       exportMetrics: true
+  volumes:
+    - name: cloud-creds
+      mountPath: /secrets/cloud
+      secret:
+        secretName: cloud-creds
   env:
     - name: GOOGLE_APPLICATION_CREDENTIALS
-      valueFrom:
-        secretKeyRef:
-          key: osServiceAccount.json
-          name: cloud-creds
+      value: /secrets/cloud/osServiceAccount.json
