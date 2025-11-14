@@ -4,6 +4,8 @@ CONTAINER_BIN="${CONTAINER_BIN:-podman}"
 COMPOSE_FILE="${COMPOSE_FILE:-compose.yaml}"
 COMPOSE_BIN="${COMPOSE_BIN:-podman-compose}"
 CONFIG_YAML_PATH="$(dirname "$0")/config.yaml"
+CONTAINER_SOCK="${CONTAINER_SOCK:-/var/run/podman/podman.sock}"
+CONTAINER_REGISTRIES_CONF="${CONTAINER_REGISTRIES_CONF:-$HOME/.config/containers/registries.conf}"
 REGENERATE_SECRETS=false
 
 usage() {
@@ -20,7 +22,15 @@ OPTIONS
 
 ENVIRONMENT VARIABLES
 
-  REBUILD       Rebuilds data volumes.
+  REBUILD                     Rebuilds data volumes.
+  COMPOSE_BIN                 The binary to use for starting Compose services.
+                              (You can also create a file called '$PWD/.compose_bin' to set this option.)
+  CONTAINER_BIN               The binary to use for doing stuff in containers.
+                              (You can also create a file called '$PWD/.container.bin' to set this option.)
+  CONTAINER_SOCK              The socket to use for communicating with the container engine.
+                              (You can also create a file called '$PWD/.container.sock' to set this option.)
+  CONTAINER_REGISTRIES_CONF   The file to use for registry configuration options.
+                              (You can also create a file called '$PWD/.registries.conf' to set this option.)
 
 NOTES
 
@@ -30,6 +40,42 @@ NOTES
   To do that, add the '--secrets-only' or '--kustomizations-only' flags to the end of your
   './deploy.sh' command.
 EOF
+}
+
+_compose_bin() {
+  if test -f "$PWD/.compose_bin"
+  then
+    cat "$PWD/.compose_bin"
+    return 0
+  fi
+  echo "$COMPOSE_BIN"
+}
+
+_container_bin() {
+  if test -f "$PWD/.container_bin"
+  then
+    cat "$PWD/.container_bin"
+    return 0
+  fi
+  echo "$CONTAINER_BIN"
+}
+
+_container_sock() {
+  if test -f "$PWD/.container_sock"
+  then
+    cat "$PWD/.container_sock"
+    return 0
+  fi
+  echo "$CONTAINER_SOCK"
+}
+
+_container_registries_conf() {
+  if test -f "$PWD/.registries.conf"
+  then
+    cat "$PWD/.registries.conf"
+    return 0
+  fi
+  echo "$CONTAINER_REGISTRIES_CONF"
 }
 
 _ssh_private_key() {
@@ -47,7 +93,7 @@ _ssh_public_key() {
 }
 
 _container() {
-  "$CONTAINER_BIN" "$@"
+  "$(_container_bin)" "$@"
 }
 
 _confirm_prereqs_or_fail() {
@@ -64,7 +110,14 @@ _confirm_prereqs_or_fail() {
 }
 
 create_data_volume() {
-  test -n "$REBUILD" && _container volume rm "$DATA_VOLUME_NAME" -f >/dev/null
+  export CONTAINER_SOCK="$(_container_sock)"
+  export CONTAINER_REGISTRIES_CONF="$(_container_registries_conf)"
+  export CONTAINER_BIN="$(_container_bin)"
+  if test -n "$REBUILD"
+  then
+    >/dev/null _compose_bin down
+    >/dev/null _container volume rm -f "$DATA_VOLUME_NAME" || true
+  fi
   _container volume ls | grep -q "$DATA_VOLUME_NAME" && return 0
   _container volume create "$DATA_VOLUME_NAME" >/dev/null
 }
@@ -79,8 +132,11 @@ upload_config_into_data_volume() {
 }
 
 deploy() {
-  cmd="$COMPOSE_BIN run --rm"
+  cmd="$(_compose_bin) run --rm"
   test -n "$REBUILD" && cmd="$cmd --build"
+  export CONTAINER_SOCK="$(_container_sock)"
+  export CONTAINER_REGISTRIES_CONF="$(_container_registries_conf)"
+  export CONTAINER_BIN="$(_container_bin)"
   $cmd -e CLUSTER_KEY_FP=$(_cluster_pgp_key_fp) deploy |
     grep --color=always -Ev '(^[a-z0-9]{64}$|openshift-for-multicloud)'
 }

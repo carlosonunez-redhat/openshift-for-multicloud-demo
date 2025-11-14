@@ -13,11 +13,16 @@ services:
       - ansible-data-vol:/data
       - $PWD/deploy.yaml:/work/deploy.yaml
       - $PWD/tasks:/work/tasks
+      - "$CONTAINER_SOCK:/container_engine.sock"
     working_dir: /work
     entrypoint: bash
+    privileged: true
     environment:
       - ANSIBLE_FORCE_COLOR=true
       - CLUSTER_KEY_FP
+      - CONTAINER_BIN
+      - CONTAINER_HOST=unix:///container_engine.sock
+      - DOCKER_HOST=unix:///container_engine.sock
     command:
       - -c
       - |-
@@ -35,5 +40,4 @@ services:
     entrypoint: bash
     command:
       - -c
-      - test -f /data/config.yaml && \
-        grep -vq AES256_GCM
+      - 'test -f /data/config.yaml && grep -vq AES256_GCM /data/config.yaml'

@@ -16,10 +16,10 @@ RUN \
   curl -Lo /tmp/oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/$arch/clients/ocp/latest/openshift-client-linux.tar.gz;
 RUN mkdir /tmp/oc && tar -xvf /tmp/oc.tar.gz -C /tmp/oc
 
-FROM docker.io/library/fedora:40
+FROM docker.io/library/fedora:43
 COPY --from=oc /tmp/oc/oc /usr/bin/oc
 COPY --from=oc /tmp/oc/kubectl /usr/bin/kubectl
 COPY include/pip/requirements.txt /requirements.txt
-RUN dnf -y install python3-pip jq yq ansible python3-jmespath
+RUN dnf -y install python3-pip jq yq ansible python3-jmespath podman docker
 RUN pip install -r /requirements.txt
 RUN rm requirements.txt
