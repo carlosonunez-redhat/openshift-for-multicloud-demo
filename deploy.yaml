@@ -4,6 +4,7 @@
   gather_facts: false
   connection: local
   tasks:
+
     - include_tasks: tasks/preflight_checks.yaml
       loop: "{{ environments }}"
       loop_control:
@@ -20,3 +21,5 @@
       loop: "{{ environments }}"
       loop_control:
         loop_var: env
+
+    - include_tasks: tasks/modify_managed_cluster_security_groups.yaml

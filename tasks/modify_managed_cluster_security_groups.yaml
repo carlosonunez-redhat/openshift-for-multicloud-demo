@@ -1,0 +1,100 @@
+---
+- name: Get cloud credentials for the AWS managed cluster
+  set_fact:
+    aws_credentials: "{{ (environments | selectattr('name', 'equalto', 'aws') | first).cloud_config.credentials }}"
+    aws_region: "{{ (environments | selectattr('name', 'equalto', 'aws') | first).cloud_config.networking.region }}"
+
+- name: Get cloud credentials for the GCP managed cluster
+  set_fact:
+    gcp_credentials: "{{ (environments | selectattr('name', 'equalto', 'gcp') | first).cloud_config.credentials['service_account.json'] }}"
+    gcp_region: "{{ (environments | selectattr('name', 'equalto', 'gcp') | first).cloud_config.networking.region }}"
+    gcp_project_id: "{{ ((environments | selectattr('name', 'equalto', 'gcp') | first).cloud_config.credentials['service_account.json'] | from_json).project_id }}"
+
+- name: Get AWS security group ID for managed cluster nodes
+  register: aws_security_groups
+  amazon.aws.ec2_security_group_info:
+    aws_access_key_id: "{{ aws_credentials.aws_access_key_id }}"
+    aws_secret_access_key: "{{ aws_credentials.aws_secret_access_key }}"
+    aws_region: "{{ aws_region }}"
+    filters:
+      "tag:sigs.k8s.io/cluster-api-provider-aws/role": node
+
+- fail:
+    msg: "Wanted one AWS security group; got {{ aws_security_groups.security_groups | length }}"
+  when: aws_security_groups.security_groups | length != 1
+
+- set_fact:
+    aws_sg_id: "{{ aws_security_groups.security_groups[0].group_id }}"
+    aws_sg_name: "{{ aws_security_groups.security_groups[0].group_name }}"
+    aws_sg_vpc_id: "{{ aws_security_groups.security_groups[0].vpc_id }}"
+
+- fail:
+    msg: "No AWS security groups found that match tag 'sigs.k8s.io/cluster-api-provider-aws/role: node'"
+  when: aws_security_groups is not defined or ( aws_security_groups | length ) == 0
+
+
+- name: Get GCP managed cluster network name
+  register: gcp_network_data
+  google.cloud.gcp_compute_network_info:
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_contents: "{{ gcp_credentials }}"
+
+- fail:
+    msg: "no gcp networks found"
+  when: gcp_network_data.resources | length == 0
+
+- set_fact:
+    gcp_managed_cluster_network: "{{ gcp_network_data.resources | selectattr('name', 'contains', 'managed-cluster-gcp') | first }}"
+  ignore_errors: true
+
+- fail:
+    msg: "managed cluster network not found"
+  when: gcp_managed_cluster_network is not defined
+
+- set_fact:
+    gcp_managed_cluster_id: "{{ gcp_managed_cluster_network.name | regex_replace('-network$', '')}}"
+
+- set_fact:
+    fw_rules:
+      - name: portworx
+        ports:
+          - 7070
+          - 8080
+          - 8443
+          - 17016
+      - name: cockroach
+        ports:
+          - 8080
+          - 26257
+- name: Add GCP Firewall rules
+  google.cloud.gcp_compute_firewall:
+    project: "{{ gcp_project_id }}"
+    auth_kind: serviceaccount
+    service_account_contents: "{{ gcp_credentials }}"
+    name: "{{ gcp_managed_cluster_id }}-{{ item.name }}-0"
+    network:
+      selfLink: "global/networks/{{ gcp_managed_cluster_network.name }}"
+    allowed:
+      - ip_protocol: tcp
+        ports: "{{ item.ports }}"
+    source_tags:
+      - "{{ gcp_managed_cluster_id }}-control-plane"
+      - "{{ gcp_managed_cluster_id }}-worker"
+    target_tags:
+      - "{{ gcp_managed_cluster_id }}-control-plane"
+      - "{{ gcp_managed_cluster_id }}-worker"
+  loop: "{{ fw_rules }}"
+
+- name: Add AWS Security Group ingress rules
+  loop: "{{ fw_rules }}"
+  amazon.aws.ec2_security_group:
+    aws_access_key_id: "{{ aws_credentials.aws_access_key_id }}"
+    aws_secret_access_key: "{{ aws_credentials.aws_secret_access_key }}"
+    aws_region: "{{ aws_region }}"
+    name: "{{ aws_sg_name }}-{{ item.name }}"
+    description: "Security groups for [{{ item.name }}] service between nodes"
+    vpc_id: "{{ aws_sg_vpc_id }}"
+    rules:
+      - group_id: "{{ aws_sg_id }}"
+        ports: "{{ item.ports }}"
