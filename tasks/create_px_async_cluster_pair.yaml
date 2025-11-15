@@ -1,0 +1,76 @@
+---
+- block:
+  - name: Gather managed cluster kubeconfigs
+    include_tasks: tasks/_get_managed_cluster_kubeconfig.yaml
+    register: kubeconfigs
+    loop:
+      - aws
+      - gcp
+    loop_control:
+      loop_var: cloud
+
+  - name: Bail out if a kubeconfig is missing
+    fail:
+      msg: "One of these Kubeconfigs is undefined -- aws: {{ managed_cluster_kubeconfig_aws is not defined }}, gcp: {{ managed_cluster_kubeconfig_gcp is not defined }}"
+    when: managed_cluster_kubeconfig_aws is not defined or managed_cluster_kubeconfig_gcp is not defined
+
+  - name: Check Portworx API endpoint availability
+    include_tasks: tasks/_confirm_px_api_endpoints_available.yaml
+    loop:
+      - cloud: aws
+        kubeconfig: "{{ managed_cluster_kubeconfig_aws }}"
+      - cloud: gcp
+        kubeconfig: "{{ managed_cluster_kubeconfig_gcp }}"
+
+  - fail:
+      msg: >-
+        One of the clusters doesn't have enough Portworx API endpoints available.
+        Check your StorageCluster for initialization errors.
+        (AWS: {{ api_endpoints_ready_aws }}, GCP: {{ api_endpoints_ready_gcp }})
+    when: (api_endpoints_ready_aws | int) == 0 or ( api_endpoints_ready_gcp | int) == 0
+
+  - name: Label source and destination clusters for our cluster pair
+    set_fact:
+      src_kubeconfig: "{{ managed_cluster_kubeconfig_aws }}"
+      dest_kubeconfig: "{{ managed_cluster_kubeconfig_gcp }}"
+
+  - name: Create cluster pair
+    block:
+      - set_fact:
+          vol_name: px-cluster-pair-secrets
+          px_stork_image: docker.io/openstorage/stork:25.4.1
+
+      - name: Create secrets container vol
+        shell: "$CONTAINER_BIN volume create {{ vol_name }}"
+
+      - name: Write cluster kubeconfigs to container vol
+        shell: |-
+          echo "{{ item.kubeconfig | b64encode }}" |
+            base64 -d |
+            $CONTAINER_BIN run --rm -i -v "{{ vol_name }}:/secrets" docker.io/bash:5 -c 'cat - > /secrets/{{ item.file_name }}_kubeconfig'
+        loop:
+          - file_name: src
+            kubeconfig: "{{ src_kubeconfig }}"
+          - file_name: dst
+            kubeconfig: "{{ dest_kubeconfig }}"
+      - name: Generate Portworx cluster pair
+        shell: |-
+          $CONTAINER_BIN run --rm --platform=linux/amd64 \
+            -e KUBECONFIG=/secrets/src_kubeconfig \
+            --name px-create-cluster-pair \
+            --entrypoint /storkctl/linux/storkctl \
+            -v "{{ vol_name }}:/secrets" \
+            {{ px_stork_image }} create clusterpair cluster-pair-aws-gcp \
+              --namespace portworx \
+              --src-kube-file /secrets/src_kubeconfig \
+              --dest-kube-file /secrets/dst_kubeconfig \
+              --provider s3 \
+              --s3-endpoint "{{ common.datareplication.settings.object_store.endpoint_url }}" \
+              --s3-access-key "{{ common.datareplication.settings.object_store.access_key_id }}" \
+              --s3-secret-key "{{ common.datareplication.settings.object_store.secret_access_key }}" \
+              --s3-region "{{ common.datareplication.settings.object_store.region }}" \
+              --v=9
+    rescue:
+      - name: Remove secrets container vol
+        shell: "$CONTAINER_BIN volume rm -f {{ vol_name }}"
+  when: env.acm_config.role == "primary"

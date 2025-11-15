@@ -1,0 +1,12 @@
+---
+- name: "[managed-cluster-{{ item.cloud }}] Confirm that there's at least one ready Portworx API service"
+  register: eps
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ item.kubeconfig }}"
+    api_version: v1
+    kind: Endpoints
+    name: portworx-api
+    namespace: portworx
+
+- set_fact:
+    "api_endpoints_ready_{{ item.cloud }}": "{{ eps.resources[0].subsets[0].addresses | default([]) | length }}"

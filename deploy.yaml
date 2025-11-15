@@ -22,4 +22,9 @@
       loop_control:
         loop_var: env
 
+    - include_tasks: tasks/create_px_async_cluster_pair.yaml
+      loop: "{{ environments }}"
+      loop_control:
+        loop_var: env
+
     - include_tasks: tasks/modify_managed_cluster_security_groups.yaml
