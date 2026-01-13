@@ -75,7 +75,7 @@
             sourceRef:
               kind: GitRepository
               name: cluster-config
-            path: "infra/acm_hubs/{{ env.acm_config.role }}"
+            path: "infra/acm_hubs/flux-bootstrap/{{ env.acm_config.role }}"
             prune: true
             timeout: 1m
 
@@ -110,5 +110,5 @@
           name: cluster-config
           url: "{{ common.gitops.repo.location.url }}"
           ref: "refs/heads/{{ common.gitops.repo.location.ref }}"
-          path: "infra/acm_hubs/{{ env.acm_config.role }}"
+          path: "infra/acm_hubs/flux-bootstrap/{{ env.acm_config.role }}"
           pullSecret: "{{ git_repo_secret_ref }}"
