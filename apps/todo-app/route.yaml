@@ -6,7 +6,7 @@ metadata:
   labels:
     app: example-todo-app
 spec:
-  host: app.sandbox2461.opentlc.com
+  host: app.sandbox2743.opentlc.com
   port:
     targetPort: http
   to:
