@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+BOOTSTRAPPERS="flux argocd"
 DATA_VOLUME_NAME=ansible-data-vol
 CONTAINER_BIN="${CONTAINER_BIN:-podman}"
 COMPOSE_FILE="${COMPOSE_FILE:-compose.yaml}"
@@ -606,28 +607,36 @@ update_clusterdeployment_kustomizations() {
   local patches domain cluster_name region cluster_ocp_version
   for cloud in "$@"
   do
-    f="infra/acm_hubs/primary/managedclusters/$cloud/managedcluster.yaml"
-    select='.target.kind == "ClusterDeployment" and .target.name == "replace-me"'
-    patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
-    test -z "$patches" && return 1
-    domain=$(sops decrypt "$CONFIG_YAML_PATH" |
-      yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.domain')
-    cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
-      yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
-    region=$(sops decrypt "$CONFIG_YAML_PATH" |
-      yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.region')
-    cluster_ocp_version=$(sops decrypt "$CONFIG_YAML_PATH" |
-      yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.openshift_image_set')
-    for kvp in "baseDomain;$domain" "clusterName;$cluster_name" "metadata/name;$cluster_name" \
-      "region;$region" "imageSetRef;$cluster_ocp_version"
+    for bootstrapper in $BOOTSTRAPPERS
     do
-      k="$(cut -f1 -d ';' <<< "$kvp")"
-      v="$(cut -f2 -d ';' <<< "$kvp")"
-      patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
+      f="infra/acm_hubs/${bootstrapper}-bootstrap/primary/managedclusters/$cloud/managedcluster.yaml"
+      if ! test -f "$f"
+      then
+        >&2 echo "WARNING: managed cluster definition for [$cloud] not found at $f"
+        continue
+      fi
+      select='.target.kind == "ClusterDeployment" and .target.name == "replace-me"'
+      patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
+      test -z "$patches" && return 1
+      domain=$(sops decrypt "$CONFIG_YAML_PATH" |
+        yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.domain')
+      cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
+        yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
+      region=$(sops decrypt "$CONFIG_YAML_PATH" |
+        yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.region')
+      cluster_ocp_version=$(sops decrypt "$CONFIG_YAML_PATH" |
+        yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.openshift_image_set')
+      for kvp in "baseDomain;$domain" "clusterName;$cluster_name" "metadata/name;$cluster_name" \
+        "region;$region" "imageSetRef;$cluster_ocp_version"
+      do
+        k="$(cut -f1 -d ';' <<< "$kvp")"
+        v="$(cut -f2 -d ';' <<< "$kvp")"
+        patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
+      done
+      yq -i \
+        "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
+        "$f"
     done
-    yq -i \
-      "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
-      "$f"
   done
 }
 
@@ -635,21 +644,29 @@ update_klusterletaddonconfig_kustomizations() {
   local patches domain cluster_name region cluster_ocp_version
   for cloud in "$@"
     do
-    f="infra/acm_hubs/primary/managedclusters/$cloud/managedcluster.yaml"
-    select='.target.kind == "ClusterDeployment" and .target.name == "replace-me"'
-    patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
-    test -z "$patches" && return 1
-    cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
-      yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
-    for kvp in "metadata/name:$cluster_name" "clusterName:$cluster_name"
-    do
-      k="$(cut -f1 -d ';' <<< "$kvp")"
-      v="$(cut -f2 -d ';' <<< "$kvp")"
-      patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
+      for bootstrapper in $BOOTSTRAPPERS
+      do
+      f="infra/acm_hubs/${bootstrapper}-bootstrap/primary/managedclusters/$cloud/managedcluster.yaml"
+        if ! test -f "$f"
+        then
+          >&2 echo "WARNING: managed cluster definition for [$cloud] not found at $f"
+          continue
+        fi
+      select='.target.kind == "ClusterDeployment" and .target.name == "replace-me"'
+      patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
+      test -z "$patches" && return 1
+      cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
+        yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
+      for kvp in "metadata/name:$cluster_name" "clusterName:$cluster_name"
+      do
+        k="$(cut -f1 -d ';' <<< "$kvp")"
+        v="$(cut -f2 -d ';' <<< "$kvp")"
+        patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
+      done
+      yq -i \
+        "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
+        "$f"
     done
-    yq -i \
-      "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
-      "$f"
   done
 }
 
@@ -657,21 +674,29 @@ update_managedcluster_kustomizations() {
   local patches domain cluster_name region cluster_ocp_version
   for cloud in "$@"
   do
-    f="infra/acm_hubs/primary/managedclusters/$cloud/managedcluster.yaml"
-    select='.target.kind == "ManagedCluster" and .target.name == "replace-me"'
-    patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
-    test -z "$patches" && return 1
-    cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
-      yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
-    for kvp in "metadata/name:$cluster_name"
-    do
-      k="$(cut -f1 -d ';' <<< "$kvp")"
-      v="$(cut -f2 -d ';' <<< "$kvp")"
-      patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
+    for bootstrapper in $BOOTSTRAPPERS
+      do
+      f="infra/acm_hubs/${bootstrapper}-bootstrap/primary/managedclusters/$cloud/managedcluster.yaml"
+      if ! test -f "$f"
+      then
+        >&2 echo "WARNING: managed cluster definition for [$cloud] not found at $f"
+        continue
+      fi
+      select='.target.kind == "ManagedCluster" and .target.name == "replace-me"'
+      patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
+      test -z "$patches" && return 1
+      cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
+        yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
+      for kvp in "metadata/name:$cluster_name"
+      do
+        k="$(cut -f1 -d ';' <<< "$kvp")"
+        v="$(cut -f2 -d ';' <<< "$kvp")"
+        patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
+      done
+      yq -i \
+        "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
+        "$f"
     done
-    yq -i \
-      "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
-      "$f"
   done
 }
 

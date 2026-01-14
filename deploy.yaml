@@ -7,6 +7,7 @@
     - set_fact:
         primary_environment: "{{ environments | selectattr('acm_config.role', 'equalto', 'primary') | first }}"
         backup_environment: "{{ environments | selectattr('acm_config.role', 'equalto', 'backup') | first }}"
+        bootstrapper: "{{ common.bootstrap.bootstrapper | lower }}"
 
     - include_tasks: tasks/preflight_checks.yaml
       loop: "{{ environments }}"
@@ -19,11 +20,13 @@
         settings: "{{ common.dataprotection.settings }}"
 
     - include_tasks: tasks/install_fluxcd.yaml
+      when: bootstrapper == 'flux'
       loop: "{{ environments }}"
       loop_control:
         loop_var: env
 
     - include_tasks: tasks/create_flux_subscription.yaml
+      when: bootstrapper == 'flux'
       loop: "{{ environments }}"
       loop_control:
         loop_var: env
