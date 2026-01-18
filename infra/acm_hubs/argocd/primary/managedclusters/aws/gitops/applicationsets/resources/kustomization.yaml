@@ -21,7 +21,7 @@ patches:
         value:
           repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
           targetRevision: main
-            path: ./infra/clusters/aws/infra/resources
+          path: ./infra/clusters/aws/infra/resources
       - op: replace
         path: /spec/template/spec/destination/namespace
         value: managed-cluster-aws
