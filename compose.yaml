@@ -1,23 +1,30 @@
 volumes:
   ansible-data-vol:
     external: true
+  ansible-secrets-vol:
+    external: true
 services:
   ansible:
     depends_on:
       confirm_config_usable:
+        condition: service_completed_successfully
+      confirm_decrypted_secrets:
         condition: service_completed_successfully
     build:
       context: .
       dockerfile: include/containerfiles/Containerfile
     volumes:
       - ansible-data-vol:/data
+      - ansible-secrets-vol:/secrets
       - $PWD/deploy.yaml:/work/deploy.yaml
       - $PWD/failover.yaml:/work/failover.yaml
       - $PWD/tasks:/work/tasks
+      - $PWD/infra:/infra
       - "$CONTAINER_SOCK:/container_engine.sock"
     working_dir: /work
     entrypoint: bash
     privileged: true
+    tty: true
     environment:
       - ANSIBLE_FORCE_COLOR=true
       - CLUSTER_KEY_FP
@@ -44,3 +51,26 @@ services:
     command:
       - -c
       - 'test -f /data/config.yaml && grep -vq AES256_GCM /data/config.yaml'
+  confirm_decrypted_secrets:
+    build:
+      context: .
+      dockerfile: include/containerfiles/Containerfile
+    volumes:
+      - ansible-secrets-vol:/secrets
+    working_dir: /data
+    entrypoint: bash
+    command:
+      - -c
+      - |-
+        if ! test -d /secrets
+        then
+          >&2 echo "ERROR: /secrets not found or mounted. Cannot continue"
+          exit 1
+        fi
+        find /secrets -type f |
+        while read -r f
+        do
+          grep -q AES256_GCM "$f" || continue
+          >&2 echo "ERROR: File '$f' not decrypted. Cannot continue"
+          exit 1
+        done

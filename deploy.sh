@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 BOOTSTRAPPERS="flux argocd"
 DATA_VOLUME_NAME=ansible-data-vol
+SECRETS_VOLUME_NAME=ansible-secrets-vol
 CONTAINER_BIN="${CONTAINER_BIN:-podman}"
 COMPOSE_FILE="${COMPOSE_FILE:-compose.yaml}"
 COMPOSE_BIN="${COMPOSE_BIN:-podman-compose}"
@@ -128,6 +129,19 @@ create_data_volume() {
   fi
   _container volume ls | grep -q "$DATA_VOLUME_NAME" && return 0
   _container volume create "$DATA_VOLUME_NAME" >/dev/null
+}
+
+create_secrets_volume() {
+  export CONTAINER_SOCK="$(_container_sock)"
+  export CONTAINER_REGISTRIES_CONF="$(_container_registries_conf)"
+  export CONTAINER_BIN="$(_container_bin)"
+  if test -n "$REBUILD"
+  then
+    >/dev/null _compose_bin down
+    >/dev/null _container volume rm -f "$SECRETS_VOLUME_NAME" || true
+  fi
+  _container volume ls | grep -q "$SECRETS_VOLUME_NAME" && return 0
+  _container volume create "$SECRETS_VOLUME_NAME" >/dev/null
 }
 
 upload_config_into_data_volume() {
@@ -767,6 +781,27 @@ update_app_route_hostnames() {
   echo "$new_route" > "$PWD/apps/todo-app/route.yaml"
 }
 
+decrypt_gitops_secrets_into_secrets_volume() {
+  local new_dir new_f content
+  test -n "$REBUILD" && docker run --rm -v "$SECRETS_VOLUME_NAME:/secrets" bash:5 rm -rf /secrets/*
+  find "$PWD/infra/secrets/gitops" -type f |
+  while read -r f
+  do
+    new_dir="$(dirname "/secrets/$(sed -E 's;.*/secrets/;;' <<< "$f")")"
+    new_f="${new_dir}/$(basename "$f")"
+    docker run --rm -v "$SECRETS_VOLUME_NAME:/secrets" bash:5 test -f "$new_f" && continue
+    if grep -Eq '^sops:' "$f"
+    then content=$(sops --config "$PWD/infra/secrets/.sops.yaml" decrypt "$f")
+    else content=$(cat "$f")
+    fi
+    >&2 echo "INFO: Storing bootstrap file [$f] into secrets volume as [$new_f]"
+    echo "$content" |
+      docker run --rm -i -v "$SECRETS_VOLUME_NAME:/secrets" bash:5 -c \
+        "mkdir -p $(dirname "$new_f") && cat - > $new_f"
+  done
+
+}
+
 set -e
 show_help_if_requested "$@"
 preflight || exit 1
@@ -799,6 +834,9 @@ fi
 
 create_data_volume
 upload_config_into_data_volume
+
+create_secrets_volume
+decrypt_gitops_secrets_into_secrets_volume
 if skip_preflight_checks "$@"
 then deploy_skip_preflight
 else deploy
