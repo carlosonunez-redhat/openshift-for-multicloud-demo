@@ -1,0 +1,34 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../../../../../infra/components/resources/acm/placement
+patches:
+    - target:
+        kind: Placement
+        name: replace-me
+        namespace: openshift-gitops
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: gcp-gitops-placement
+        - op: replace
+          path: /spec/clusterSets
+          value: ["global"]
+        - op: replace
+          path: /spec/predicates/0/requiredClusterSelector/labelSelector/matchExpressions
+          value:
+            - key: cloud
+              operator: In
+              values:
+                - Google
+            - key: name
+              operator: NotIn
+              values:
+                - local-cluster
+        - op: replace
+          path: /spec/tolerations
+          value:
+            - key: cluster.open-cluster-management.io/unreachable
+              operator: Equal
+            - key: cluster.open-cluster-management.io/unavailable
+              operator: Equal
