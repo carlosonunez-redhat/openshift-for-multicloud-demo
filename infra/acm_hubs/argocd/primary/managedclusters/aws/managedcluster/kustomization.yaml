@@ -80,5 +80,3 @@ patches:
       - op: replace
         path: /spec/pullSecretRef/name
         value: ocp-pull-secret
-spec:
-  patches: []
