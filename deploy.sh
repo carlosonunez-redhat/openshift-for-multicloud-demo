@@ -654,7 +654,7 @@ update_clusterdeployment_kustomizations() {
         patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
       done
       yq -i \
-        "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
+        "(${preamble}.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
         "$f"
     done
   done
@@ -690,7 +690,7 @@ update_klusterletaddonconfig_kustomizations() {
           patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
         done
         yq -i \
-          "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
+          "(${preamble}.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
           "$f"
     done
   done
@@ -721,7 +721,7 @@ update_managedcluster_kustomizations() {
           patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
         done
         yq -i \
-          "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
+          "(${preamble}.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
           "$f"
     done
   done
@@ -835,7 +835,6 @@ then
   >&2 echo "INFO: Repo URLs updated; stopping."
   exit 0
 fi
-
 update_clusterdeployment_kustomizations 'aws' 'gcp'
 update_klusterletaddonconfig_kustomizations 'aws' 'gcp'
 update_managedcluster_kustomizations 'aws' 'gcp'
