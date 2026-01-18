@@ -1,0 +1,66 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../../infra/components/resources/argocd/server
+  - ../../../../infra/components/resources/argocd/application
+patches:
+  - target:
+      kind: ArgoCD
+      name: openshift-gitops
+      namespace: openshift-gitops
+    patch: |-
+      - op: add
+        path: /spec
+        value:
+          kustomizeBuildOptions: --enable-alpha-plugins
+          controller:
+            env:
+              - name: ARGOCD_RECONCILIATION_TIMEOUT
+                value: 30s
+          repo:
+            volumes:
+              - name: workdir
+                emptyDir: {}
+              - name: sops-gpg
+                secret:
+                  secretName: cluster-key
+                  defaultMode: 0400
+              - name: sops-config
+                configMap:
+                  name: sops-config
+            volumeMounts:
+              - mountPath: /.config/kustomize/plugin/viaduct.ai/v1/ksops/ksops
+                name: workdir
+                subPath: ksops
+              - mountPath: /.config/sops
+                name: sops-config
+              - mountPath: /usr/local/bin/kustomize
+                name: workdir
+                subPath: kustomize
+              - mountPath: /usr/local/bin/sops
+                name: workdir
+                subPath: sops
+              - mountPath: /sops-gpg
+                name: workdir
+                subPath: sops-gpg
+            env:
+              - name: GNUPGHOME
+                value: /sops-gpg/.gnupg
+              - name: XDG_CONFIG_HOME
+                value: /.config
+  - target:
+      kind: Application
+      name: replace-me
+    patch: |-
+        - op: replace
+          path: /metadata/name
+          value: bootstrap-acm-hub-primary
+        - op: replace
+          path: /spec/source
+          value:
+            repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
+            targetRevision: main
+            path: ./infra/acm_hubs/argocd/primary
+        - op: replace
+          path: /spec/destination/namespace
+          value: acm-hub-bootstrap
