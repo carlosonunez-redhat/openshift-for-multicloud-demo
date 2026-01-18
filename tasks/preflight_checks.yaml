@@ -1,43 +1,51 @@
 ---
-- name: "[{{ env.name }}] Get cluster version"
-  kubernetes.core.k8s_info:
-    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
-    kind: ClusterVersion
-    name: version
-  register: result
+- block:
+  - name: "[{{ env.name }}] PREFLIGHT: List nodes to confirm connectivity to cluster"
+    kubernetes.core.k8s_info:
+      api_version: v1
+      kind: Node
+      kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+    register: result
+
+  - fail:
+      msg: "Couldn't connect to OpenShift cluster in cloud '{{ env.name }}'"
+    when: result.resources is not defined or result.resources | length == 0
 
 - name: "[{{ env.name }}] Fail if bootstrapper is invalid"
   fail:
     msg: "'common.bootstrap.bootstrapper' in config.yaml must be set to 'flux' or 'argocd', not '{{ bootstrapper }}'"
   when: bootstrapper != 'flux' and bootstrapper != 'argocd'
 
-- set_fact:
-    cluster_version: "{{ result.resources[0].spec.channel | split('-') | last }}"
-
-- set_fact:
-    flux_package: flux
-  when: cluster_version is version('4.20', '>=')
-
-- set_fact:
-    flux_package: flux-operator
-  when: cluster_version is version('4.20', '<')
-
-- name: "[{{ env.name }}] PREFLIGHT: List nodes to confirm connectivity to cluster"
-  kubernetes.core.k8s_info:
-    api_version: v1
-    kind: Node
-    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
-  register: result
-
-- fail:
-    msg: "Couldn't connect to ACM hub in cloud '{{ env.name }}'"
-  when: result.resources is not defined or result.resources | length == 0
-
 - include_tasks: tasks/_confirm_packagemanifest_exists.yaml
   loop:
-    - name: "{{ flux_package }}"
-      catalog: community-operators
     - name: advanced-cluster-management
       catalog: redhat-operators
     - name: openshift-gitops-operator
       catalog: redhat-operators
+
+- block:
+  - name: "[{{ env.name }}] Get cluster version"
+    when: bootstrapper == 'flux'
+    kubernetes.core.k8s_info:
+      kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+      kind: ClusterVersion
+      name: version
+    register: result
+
+  - set_fact:
+      cluster_version: "{{ result.resources[0].spec.channel | split('-') | last }}"
+    when: bootstrapper == 'flux'
+
+  - set_fact:
+      flux_package: flux
+    when: bootstrapper == 'flux' and cluster_version is version('4.20', '>=')
+
+  - set_fact:
+      flux_package: flux-operator
+    when: bootstrapper == 'flux' and cluster_version is version('4.20', '<')
+
+  - include_tasks: tasks/_confirm_packagemanifest_exists.yaml
+    when: bootstrapper == 'flux'
+    loop:
+      - name: "{{ flux_package }}"
+        catalog: community-operators
