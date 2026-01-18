@@ -103,3 +103,6 @@ patches:
         - op: replace
           path: /spec/destination/namespace
           value: acm-hub-bootstrap
+        - op: add
+          path: /spec/syncPolicy/syncOptions/1
+          value: SkipDryRunOnMissingResource=true
