@@ -48,6 +48,45 @@ patches:
                 value: /sops-gpg/.gnupg
               - name: XDG_CONFIG_HOME
                 value: /.config
+              - name: SOPS_CONFIG
+                value: /.config/sops/.sops.yaml
+            initContainers:
+            - name: fetch-ksops
+              image: curlimages/curl:8.7.1
+              command: [ "/bin/sh", "-c" ]
+              volumeMounts:
+                - mountPath: /workdir
+                  name: workdir
+              args:
+                - |
+                  for kvp in \
+                    'ksops;https://github.com/viaduct-ai/kustomize-sops/releases/download/v4.4.0/ksops_4.4.0_Linux_x86_64.tar.gz' \
+                    'kustomize;https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.8.0/kustomize_v5.8.0_linux_amd64.tar.gz'
+                  do
+                    name="$(echo "$kvp" | cut -f1 -d ';')"
+                    url="$(echo "$kvp" | cut -f2 -d ';')"
+                    curl -Lo "/tmp/${name}.tar.gz" "$url" &&
+                      tar -xvf "/tmp/${name}.tar.gz" -C /workdir
+                  done
+            - name: init-keys
+              image: vladgh/gpg@sha256:703f8bb71adbab5ff131e1201c0fa302da53a232c35c55b9e599fc9552ef6b74
+              command: ["/bin/sh", "-c"]
+              volumeMounts:
+                - mountPath: /workdir
+                  name: workdir
+                - mountPath: /keys
+                  name: sops-gpg
+              args:
+                - |
+                  # Import GPG key
+                  >&2 echo "Importing GPG key..."
+                  mkdir -p /workdir/sops-gpg/.gnupg
+                  chmod 700 /workdir/sops-gpg/.gnupg
+                  gpg --homedir /workdir/sops-gpg/.gnupg --import /keys/sops.asc
+
+                  # Set ultimate trust for the imported key
+                  KEY_FP=$(gpg --homedir /workdir/sops-gpg/.gnupg --list-keys --with-colons | awk -F: '/^fpr:/ {print $10; exit}')
+                  echo "${KEY_FP}:6:" | gpg --homedir /workdir/sops-gpg/.gnupg --import-ownertrust
   - target:
       kind: Application
       name: replace-me
