@@ -19,17 +19,31 @@
       vars:
         settings: "{{ common.dataprotection.settings }}"
 
-    - include_tasks: tasks/install_fluxcd.yaml
-      when: bootstrapper == 'flux'
-      loop: "{{ environments }}"
-      loop_control:
-        loop_var: env
+    - block:
+      - include_tasks: tasks/install_argocd.yaml
+        when: bootstrapper == 'argocd'
+        loop: "{{ environments }}"
+        loop_control:
+          loop_var: env
 
-    - include_tasks: tasks/create_flux_subscription.yaml
-      when: bootstrapper == 'flux'
-      loop: "{{ environments }}"
-      loop_control:
-        loop_var: env
+      - include_tasks: tasks/configure_acm_hubs_argocd.yaml
+        when: bootstrapper == 'argocd'
+        loop: "{{ environments }}"
+        loop_control:
+          loop_var: env
+
+    - block:
+      - include_tasks: tasks/install_fluxcd.yaml
+        when: bootstrapper == 'flux'
+        loop: "{{ environments }}"
+        loop_control:
+          loop_var: env
+
+      - include_tasks: tasks/configure_acm_hubs_flux.yaml
+        when: bootstrapper == 'flux'
+        loop: "{{ environments }}"
+        loop_control:
+          loop_var: env
 
     - include_tasks: tasks/wait_until_managed_cluster_ready.yaml
       vars:

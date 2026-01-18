@@ -1,0 +1,9 @@
+- name: "[{{ env.name }}] Install repo and sOps cluster secrets"
+  kubernetes.core.k8s:
+    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+    definition: "{{ lookup('kubernetes.core.kustomize', dir='/secrets/gitops') }}"
+
+- name: "[{{ env.name }}] Bootstrap '{{ env.acm_config.role }}' ACM hub"
+  kubernetes.core.k8s:
+    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+    definition: "{{ lookup('kubernetes.core.kustomize', dir='/infra/bootstrap/argocd/' + env.acm_config.role) }}"

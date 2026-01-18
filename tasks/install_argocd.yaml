@@ -1,0 +1,17 @@
+- name: "[{{ env.name }}] Install OpenShift GitOps operator"
+  kubernetes.core.k8s:
+    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+    definition: "{{ lookup('kubernetes.core.kustomize', dir='/infra/components/operators/gitops') }}"
+
+- name: "[{{ env.name }}] Wait for OpenShift GitOps to become available"
+  kubernetes.core.k8s_info:
+    kubeconfig: "{{ env.cluster.kubeconfig | from_yaml }}"
+    api_version: apps/v1
+    kind: Deployment
+    name: openshift-gitops-applicationset-controller
+    namespace: openshift-gitops
+    wait: yes
+    wait_condition:
+      type: Available
+      status: "True"
+      reason: MinimumReplicasAvailable
