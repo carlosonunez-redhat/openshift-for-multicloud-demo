@@ -130,7 +130,7 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: argocd-server-options
+  name: argocd-server
   namespace: flux-system
 spec:
   interval: 1m0s
@@ -138,7 +138,7 @@ spec:
     kind: GitRepository
     name: cluster-config
     namespace: flux-system
-  path: ./infra/components/resources/argocd/serveroptions
+  path: ./infra/components/resources/argocd/server
   wait: true
   prune: true
   force: true

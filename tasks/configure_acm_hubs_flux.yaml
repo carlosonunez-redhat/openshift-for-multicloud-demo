@@ -44,7 +44,7 @@
       data:
         sops.asc: "{{ common.gitops.repo.secrets.cluster_gpg_key | b64encode }}"
 
-- name: "[{{ env.name }}] Configure Flux and connect cluster to this repository"
+- name: "[{{ env.name }}] Bootstrap '{{ env.acm_config.role }}' ACM hub"
   when: cluster_version is version('4.20', '>=')
   block:
     - kubernetes.core.k8s:
@@ -75,11 +75,11 @@
             sourceRef:
               kind: GitRepository
               name: cluster-config
-            path: "infra/acm_hubs/flux-bootstrap/{{ env.acm_config.role }}"
+            path: "infra/acm_hubs/flux/{{ env.acm_config.role }}"
             prune: true
             timeout: 1m
 
-- name: "[{{ env.name }}] Configure Flux and connect cluster to this repository"
+- name: "[{{ env.name }}] Bootstrap '{{ env.acm_config.role }}' ACM hub"
   when: cluster_version is version('4.20', '<')
   kubernetes.core.k8s:
     state: present
@@ -110,5 +110,5 @@
           name: cluster-config
           url: "{{ common.gitops.repo.location.url }}"
           ref: "refs/heads/{{ common.gitops.repo.location.ref }}"
-          path: "infra/acm_hubs/flux-bootstrap/{{ env.acm_config.role }}"
+          path: "infra/acm_hubs/flux/{{ env.acm_config.role }}"
           pullSecret: "{{ git_repo_secret_ref }}"
