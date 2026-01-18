@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../../../../../infra/components/resources/submariner/addon
+patches:
+    - target:
+        kind: ManagedClusterAddOn
+        namespace: namespace
+        name: submariner
+      patch: |-
+        - op: replace
+          path: /metadata/namespace
+          value: managed-cluster-gcp
+    - target:
+        kind: SubmarinerConfig
+        namespace: namespace
+        name: submariner
+      patch: |-
+        - op: replace
+          path: /metadata/namespace
+          value: managed-cluster-gcp
+        - op: replace
+          path: /spec/gatewayConfig
+          value:
+            gateways: 1
+            aws:
+              instanceType: n1-standard-1
