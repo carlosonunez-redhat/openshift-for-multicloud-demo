@@ -5,4 +5,5 @@ resources:
   - base/resources
   - dataprotection/dpa
   - dataprotection/secret
-  - managedclusters
+  - managedclusters/aws
+  - managedclusters/gcp
