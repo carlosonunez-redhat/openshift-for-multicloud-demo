@@ -59,7 +59,7 @@ patches:
           path: /spec/source
           value:
             repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
-            targetRevision: main
+            targetRevision: feat/argocd-end-to-end
             path: ./infra/acm_hubs/argocd/primary
         - op: replace
           path: /spec/destination/namespace
