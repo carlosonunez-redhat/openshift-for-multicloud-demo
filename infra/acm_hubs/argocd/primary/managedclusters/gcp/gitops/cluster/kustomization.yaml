@@ -4,6 +4,13 @@ resources:
   - ../../../../../../../../infra/components/resources/argocd/cluster
 patches:
     - target:
+        kind: ClusterRoleBinding
+        name: argo-admin
+      patch: |-
+        - op: replace
+          path: /metadata/name
+          value: argo-admin-gcp
+    - target:
         kind: GitOpsCluster
         name: replace-me
         namespace: openshift-gitops
