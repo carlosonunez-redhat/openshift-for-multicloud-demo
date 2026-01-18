@@ -618,19 +618,25 @@ EOF
 }
 
 update_clusterdeployment_kustomizations() {
-  local patches domain cluster_name region cluster_ocp_version
+  local patches domain cluster_name region cluster_ocp_version preamble
   for cloud in "$@"
   do
     for bootstrapper in $BOOTSTRAPPERS
     do
-      f="infra/acm_hubs/${bootstrapper}-bootstrap/primary/managedclusters/$cloud/managedcluster.yaml"
+      f="infra/acm_hubs/${bootstrapper}/primary/managedclusters/$cloud/managedcluster.yaml"
+      preamble=".spec"
+      if test "$bootstrapper" == argocd
+      then
+        preamble=""
+        f="infra/acm_hubs/${bootstrapper}/primary/managedclusters/$cloud/managedcluster/kustomization.yaml"
+      fi
       if ! test -f "$f"
       then
         >&2 echo "WARNING: managed cluster definition for [$cloud] not found at $f"
         continue
       fi
       select='.target.kind == "ClusterDeployment" and .target.name == "replace-me"'
-      patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
+      patches=$(yq -r "${preamble}.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
       test -z "$patches" && return 1
       domain=$(sops decrypt "$CONFIG_YAML_PATH" |
         yq -r '.environments[] | select(.name == "'"$cloud"'") | .cloud_config.networking.domain')
@@ -655,61 +661,68 @@ update_clusterdeployment_kustomizations() {
 }
 
 update_klusterletaddonconfig_kustomizations() {
-  local patches domain cluster_name region cluster_ocp_version
+  local patches domain cluster_name region cluster_ocp_version preamble
   for cloud in "$@"
     do
       for bootstrapper in $BOOTSTRAPPERS
       do
-      f="infra/acm_hubs/${bootstrapper}-bootstrap/primary/managedclusters/$cloud/managedcluster.yaml"
+        f="infra/acm_hubs/${bootstrapper}/primary/managedclusters/$cloud/managedcluster.yaml"
+        preamble=".spec"
+        if test "$bootstrapper" == argocd
+        then
+          preamble=""
+          f="infra/acm_hubs/${bootstrapper}/primary/managedclusters/$cloud/managedcluster/kustomization.yaml"
+        fi
         if ! test -f "$f"
         then
           >&2 echo "WARNING: managed cluster definition for [$cloud] not found at $f"
           continue
         fi
-      select='.target.kind == "ClusterDeployment" and .target.name == "replace-me"'
-      patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
-      test -z "$patches" && return 1
-      cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
-        yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
-      for kvp in "metadata/name:$cluster_name" "clusterName:$cluster_name"
-      do
-        k="$(cut -f1 -d ';' <<< "$kvp")"
-        v="$(cut -f2 -d ';' <<< "$kvp")"
-        patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
-      done
-      yq -i \
-        "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
-        "$f"
+        select='.target.kind == "ClusterDeployment" and .target.name == "replace-me"'
+        patches=$(yq -r "${preamble}.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
+        test -z "$patches" && return 1
+        cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
+          yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
+        for kvp in "metadata/name:$cluster_name" "clusterName:$cluster_name"
+        do
+          k="$(cut -f1 -d ';' <<< "$kvp")"
+          v="$(cut -f2 -d ';' <<< "$kvp")"
+          patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
+        done
+        yq -i \
+          "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
+          "$f"
     done
   done
 }
 
 update_managedcluster_kustomizations() {
-  local patches domain cluster_name region cluster_ocp_version
+  local patches domain cluster_name region cluster_ocp_version preamble
   for cloud in "$@"
   do
     for bootstrapper in $BOOTSTRAPPERS
       do
-      f="infra/acm_hubs/${bootstrapper}-bootstrap/primary/managedclusters/$cloud/managedcluster.yaml"
-      if ! test -f "$f"
-      then
-        >&2 echo "WARNING: managed cluster definition for [$cloud] not found at $f"
-        continue
-      fi
-      select='.target.kind == "ManagedCluster" and .target.name == "replace-me"'
-      patches=$(yq -r ".spec.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
-      test -z "$patches" && return 1
-      cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
-        yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
-      for kvp in "metadata/name:$cluster_name"
-      do
-        k="$(cut -f1 -d ';' <<< "$kvp")"
-        v="$(cut -f2 -d ';' <<< "$kvp")"
-        patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
-      done
-      yq -i \
-        "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
-        "$f"
+        f="infra/acm_hubs/${bootstrapper}/primary/managedclusters/$cloud/managedcluster.yaml"
+        preamble=".spec"
+        if test "$bootstrapper" == argocd
+        then
+          preamble=""
+          f="infra/acm_hubs/${bootstrapper}/primary/managedclusters/$cloud/managedcluster/kustomization.yaml"
+        fi
+        select='.target.kind == "ManagedCluster" and .target.name == "replace-me"'
+        patches=$(yq -r "${preamble}.patches[] | select($select) | .patch" "$f" | yq -o=j -I=0 .)
+        test -z "$patches" && return 1
+        cluster_name=$(sops decrypt "$CONFIG_YAML_PATH" |
+          yq -r '.environments[] | select(.name == "'"$cloud"'") | .cluster_config.cluster_name')
+        for kvp in "metadata/name:$cluster_name"
+        do
+          k="$(cut -f1 -d ';' <<< "$kvp")"
+          v="$(cut -f2 -d ';' <<< "$kvp")"
+          patches=$(jq "(.[] | select(.path | contains(\"$k\"))).value = \"$v\"" <<< "$patches")
+        done
+        yq -i \
+          "(.spec.patches[] | select($select)).patch = \"$(yq -p=j -o=y <<< "$patches")\"" \
+          "$f"
     done
   done
 }
