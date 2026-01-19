@@ -121,7 +121,7 @@ AWS and failover into Google Cloud.
     sub   cv25519 2025-10-14 [E]
     ```
 
-4. Create an SSH key. This will be used by ArgoCD to clone this
+4. Create an SSH key. This will be used by ArgoCD (and Flux, if configured) to clone this
    repository and deploy the ACM hubs and managed OpenShift clusters
    as well as our demo application and its dependencies.
 
