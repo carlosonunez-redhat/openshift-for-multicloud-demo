@@ -121,9 +121,9 @@ AWS and failover into Google Cloud.
     sub   cv25519 2025-10-14 [E]
     ```
 
-4. Create an SSH key. This will be used by Flux and ArgoCD to clone this
-   repository and deploy the ACM hubs and managed OpenShift clusters (by Flux)
-   as well as our demo application and its dependencies (by Argo).
+4. Create an SSH key. This will be used by ArgoCD to clone this
+   repository and deploy the ACM hubs and managed OpenShift clusters
+   as well as our demo application and its dependencies.
 
     ```sh
     ssh-keygen -t rsa -f /tmp/id_rsa -q -N ''
@@ -205,6 +205,12 @@ Follow the steps below to create a new one.
    - Replace anything that says `change me` with actual values. See the comments
      above the keys for guidance on what to replace them with.
 
+> 📝 **NOTE**
+>
+> You can also use [Flux](https://fluxcd.io) to bootstrap ACM components. Set
+> the `bootstrapper` key underneath `common.bootstrap` to `flux` if you'd like
+> to do this.
+
 ## 🛫 Deploy the Environment
 
 Run the deploy script
@@ -223,12 +229,14 @@ This will do the following:
   the "ACM failover" part of this demo ([Ansible
   task](./tasks/create_backup_s3_bucket.yaml))
 
-- Install Flux into the "primary" ACM hub ([Ansible
-  task](./tasks/create_flux_subscription.yaml)),
+- Install either [ArgoCD](./tasks/install_argocd.yaml) or
+  [Flux](./tasks/install_fluxcd.yaml) into the "primary" and
+  "backup" ACM hubs.
 
-- Configure Flux to synchronize this repository with your ACM hub using the SSH
-  key you created earlier ([Ansible
-  task](./tasks/create_flux_subscription.yaml)),
+- Create the [ArgoCD Application](./tasks/configure_acm_hubs_argocd.yaml) or
+  [Flux GitRepository and Kustomization](./tasks/configure_acm_hubs_flux.yaml)
+  needed to synchronize this repository with your ACM hub using the SSH key you
+  created earlier.
 
 - Wait 45 minutes for ACM to create managed OpenShift clusters in AWS and GCP
   ([Ansible task](./tasks/wait_until_managed_clusters_ready.yaml))
@@ -251,8 +259,21 @@ This will do the following:
 
 The environment will take about an hour to provision.
 
-ACM, ACM backups and the managed clusters in AWS and GCP are managed by Flux.
+ACM, ACM backups and the managed clusters in AWS and GCP are managed by ArgoCD
+(by default) or Flux.
+
 You can watch its progress by running the commands below:
+
+#### ArgoCD
+
+```sh
+# `dnf -y install watch` or `brew install watch` if you get a
+# "no such file or directory" error
+watch -n 0.5 kubectl --kubeconfig /path/to/kubeconfig/for/primary/acm/hub \
+    get clusterdeployment,applications.argoproj.io -A
+```
+
+#### Flux
 
 ```sh
 # `dnf -y install watch` or `brew install watch` if you get a
@@ -262,6 +283,28 @@ watch -n 0.5 kubectl --kubeconfig /path/to/kubeconfig/for/primary/acm/hub \
 ```
 
 You'll see something like the output shown below when this is done:
+
+#### ArgoCD
+
+```sh
+Every 0.5s: kubectl --kubeconfig /tmp/aws_kubeconfig get clusterdeployment,applications.argoproj.io -A                            cnunez-mac: 18:03:06
+
+NAMESPACE             NAME                                                      INFRAID                     PLATFORM   REGION      VERSION   CLUSTERTY
+PE   PROVISIONSTATUS   POWERSTATE   AGE
+managed-cluster-aws   clusterdeployment.hive.openshift.io/managed-cluster-aws   managed-cluster-aws-42z4d   aws        us-east-2   4.18.26
+     Provisioned       Running      63m
+managed-cluster-gcp   clusterdeployment.hive.openshift.io/managed-cluster-gcp   managed-cluster-gcp-9fdlk   gcp        us-east1    4.18.26
+     Provisioned       Running      63m
+
+NAMESPACE          NAME                                                    SYNC STATUS   HEALTH STATUS
+openshift-gitops   application.argoproj.io/bootstrap-acm-hub-primary       OutOfSync     Healthy
+openshift-gitops   application.argoproj.io/managed-cluster-aws-apps        OutOfSync     Healthy
+openshift-gitops   application.argoproj.io/managed-cluster-aws-operators   OutOfSync     Degraded
+openshift-gitops   application.argoproj.io/managed-cluster-aws-resources   Synced        Healthy
+```
+
+
+#### Flux
 
 ```sh
 Every 0.5s: kubectl get kustomization,clusterdeployment,applications.argoproj.io -A  bastion.6jxv2.internal: Wed Nov 19 14:28:55 2025
@@ -413,7 +456,9 @@ _Work in progress._
 
 ### 🛬 Tear everything down!
 
-Run the command below to delete the Flux Kustomizations on both clusters. Doing
+_Work in progress._
+
+Run the command below to delete the ArgoCD or Flux resources on both clusters. Doing
 this will uninstall the ACM and GitOps operators and delete both of the managed
 clusters you created earlier.
 
