@@ -19,8 +19,8 @@ patches:
       - op: replace
         path: /spec/template/spec/source
         value:
-          repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo.git
-          targetRevision: test/readme-round-two
+          repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
+          targetRevision: main
           path: ./infra/clusters/aws/infra/resources/migrationschedule
       - op: replace
         path: /spec/template/spec/destination/namespace
@@ -46,8 +46,8 @@ patches:
       - op: replace
         path: /spec/template/spec/source
         value:
-          repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo.git
-          targetRevision: test/readme-round-two
+          repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
+          targetRevision: main
           path: ./infra/clusters/aws/infra/resources/storagecluster
       - op: replace
         path: /spec/template/spec/destination/namespace
