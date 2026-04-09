@@ -20,7 +20,7 @@ patches:
         path: /spec/template/spec/source
         value:
           repoURL: ssh://git@github.com:22/carlosonunez-redhat/openshift-for-multicloud-demo
-          targetRevision: main
+          targetRevision: testing/2026-04-09
           path: ./infra/clusters/gcp/infra/resources
       - op: replace
         path: /spec/template/spec/destination/namespace

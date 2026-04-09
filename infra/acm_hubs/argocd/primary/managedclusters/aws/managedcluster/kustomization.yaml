@@ -55,7 +55,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/baseDomain
-        value: sandbox1390.opentlc.com
+        value: sandbox2410.opentlc.com
       - op: replace
         path: /metadata/name
         value: managed-cluster-aws
