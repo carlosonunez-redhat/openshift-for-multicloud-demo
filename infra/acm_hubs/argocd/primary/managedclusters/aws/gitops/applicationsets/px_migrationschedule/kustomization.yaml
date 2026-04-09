@@ -30,6 +30,7 @@ patches:
         value:
           - CreateNamespace=true
           - Validate=false
+<<<<<<< Updated upstream:infra/acm_hubs/argocd/primary/managedclusters/aws/gitops/applicationsets/resources/kustomization.yaml
   - target:
       kind: ApplicationSet
       name: replace-me
@@ -57,3 +58,5 @@ patches:
         value:
           - CreateNamespace=true
           - Validate=false
+=======
+>>>>>>> Stashed changes:infra/acm_hubs/argocd/primary/managedclusters/aws/gitops/applicationsets/px_migrationschedule/kustomization.yaml

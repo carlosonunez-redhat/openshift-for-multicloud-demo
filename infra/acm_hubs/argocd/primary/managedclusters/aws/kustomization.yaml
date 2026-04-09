@@ -8,4 +8,5 @@ resources:
   - gitops/placement
   - gitops/applicationsets/cluster_apps
   - gitops/applicationsets/operators
-  - gitops/applicationsets/resources
+  - gitops/applicationsets/px_storagecluster
+  - gitops/applicationsets/px_migrationschedule
